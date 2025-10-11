@@ -1,5 +1,6 @@
+// SSR disabled for MVP to simplify state & hydration
 export default defineNuxtConfig({
-  ssr: true,
+  ssr: false,
 
   modules: [
     '@nuxtjs/tailwindcss',
