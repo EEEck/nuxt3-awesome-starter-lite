@@ -1,9 +1,9 @@
-<script lang="ts" setup>
-const { awesome } = useAppConfig()
-definePageMeta({ layout: 'page' })
-useHead({ titleTemplate: '', title: awesome?.name || 'Nuxt 3 Awesome Starter' })
+<script setup lang="ts">
+definePageMeta({ redirect: '/dashboard' })
 </script>
 
 <template>
-  <AwesomeWelcome :with-alert="true" />
+  <div class="flex min-h-[50vh] items-center justify-center text-slate-500">
+    Redirecting to dashboard...
+  </div>
 </template>

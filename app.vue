@@ -1,19 +1,15 @@
 <script lang="ts" setup>
-const { awesome } = useAppConfig()
+const title = 'Grading Wizard MVP'
 
 useHead({
-  title: awesome.name,
-  titleTemplate: `%s - ${awesome.name}`,
+  title,
+  titleTemplate: (chunk) => (chunk ? `${chunk} · ${title}` : title),
 })
 </script>
 
 <template>
-  <Body
-    class="antialiased duration-300 transition-colors text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-950"
-  >
-    <NuxtLayout>
-      <NuxtLoadingIndicator />
-      <NuxtPage />
-    </NuxtLayout>
-  </Body>
+  <NuxtLayout>
+    <NuxtLoadingIndicator />
+    <NuxtPage />
+  </NuxtLayout>
 </template>
