@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const links = [
-  { to: '/', label: 'Overview' },
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/grading-wizard', label: 'Grading Wizard' },
   { to: '/scan-processor', label: 'Scan Processor' },
