@@ -4,7 +4,6 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    '@nuxtjs/color-mode',
     '@pinia/nuxt',
   ],
 
@@ -28,13 +27,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-  },
-
-  colorMode: {
-    classSuffix: '',
-    storageKey: 'grading-ui-color-mode',
-    preference: 'system',
-    fallback: 'light',
   },
 
   runtimeConfig: {

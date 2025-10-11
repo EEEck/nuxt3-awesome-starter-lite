@@ -7,15 +7,11 @@
     color-scheme: light;
   }
 
-  .dark {
-    color-scheme: dark;
-  }
-
   html {
     @apply scroll-smooth;
   }
 
   body {
-    @apply bg-slate-100 font-sans text-slate-900 antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-slate-100 font-sans text-slate-900 antialiased;
   }
 }

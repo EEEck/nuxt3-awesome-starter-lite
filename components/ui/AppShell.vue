@@ -14,20 +14,20 @@ const isActive = (path: string) =>
 </script>
 
 <template>
-  <div class="relative flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+  <div class="relative flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-100">
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-6 focus:rounded-full focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"
     >
       Skip to content
     </a>
-    <header class="border-b border-white/80 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-slate-950/70">
+    <header class="border-b border-white/80 bg-white/80 backdrop-blur">
       <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-6">
-        <NuxtLink to="/" class="flex items-center gap-3 text-left">
+        <NuxtLink to="/dashboard" class="flex items-center gap-3 text-left">
           <LogoMark />
           <div>
-            <p class="font-display text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Grading Wizard</p>
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">AI Teaching Ops</p>
+            <p class="font-display text-xl font-semibold tracking-tight text-slate-900">Grading Wizard</p>
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">AI Teaching Ops</p>
           </div>
         </NuxtLink>
         <nav class="hidden items-center gap-2 text-sm font-medium text-slate-600 md:flex">
@@ -38,8 +38,8 @@ const isActive = (path: string) =>
             class="inline-flex items-center gap-2 rounded-full px-4 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             :class="[
               isActive(link.to)
-                ? 'bg-slate-900 text-white shadow-subtle dark:bg-white dark:text-slate-900'
-                : 'text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800/70',
+                ? 'bg-slate-900 text-white shadow-subtle'
+                : 'text-slate-600 hover:bg-slate-200/70',
             ]"
           >
             <span>{{ link.label }}</span>
@@ -48,21 +48,20 @@ const isActive = (path: string) =>
         <div class="flex items-center gap-3">
           <div
             v-if="props.betaLabel !== undefined"
-            class="hidden rounded-full border border-brand-400/40 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-600 shadow-sm dark:border-brand-400/30 dark:bg-brand-500/10 dark:text-brand-300 md:inline-flex"
+            class="hidden rounded-full border border-brand-400/40 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-600 shadow-sm md:inline-flex"
           >
             {{ props.betaLabel }}
           </div>
-          <ThemeToggle />
           <button
             type="button"
-            class="hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:text-white md:inline-flex"
+            class="hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 md:inline-flex"
           >
             <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
             Synced
           </button>
           <button
             type="button"
-            class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:text-white"
+            class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             aria-label="Open profile menu"
           >
             <span class="font-display text-base">JL</span>
@@ -78,8 +77,8 @@ const isActive = (path: string) =>
             class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             :class="[
               isActive(link.to)
-                ? 'bg-slate-900 text-white shadow-subtle dark:bg-white dark:text-slate-900'
-                : 'bg-white/60 text-slate-600 hover:bg-slate-200/70 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800/70',
+                ? 'bg-slate-900 text-white shadow-subtle'
+                : 'bg-white/60 text-slate-600 hover:bg-slate-200/70',
             ]"
           >
             <span>{{ link.label }}</span>
@@ -92,18 +91,18 @@ const isActive = (path: string) =>
       <slot />
     </main>
 
-    <footer class="border-t border-white/60 bg-white/70 py-8 text-sm text-slate-500 backdrop-blur dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400">
+    <footer class="border-t border-white/60 bg-white/70 py-8 text-sm text-slate-500 backdrop-blur">
       <div class="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <p class="font-semibold text-slate-700 dark:text-slate-200">© {{ year }} Grading Wizard. All rights reserved.</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+          <p class="font-semibold text-slate-700">© {{ year }} Grading Wizard. All rights reserved.</p>
+          <p class="text-xs text-slate-500">
             Designed for secure, enterprise-ready AI experiences in education.
           </p>
         </div>
-        <div class="flex items-center gap-4 text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-          <NuxtLink to="/ai-assistant" class="hover:text-slate-900 dark:hover:text-slate-200">Assistant</NuxtLink>
-          <NuxtLink to="/grading-wizard" class="hover:text-slate-900 dark:hover:text-slate-200">Wizard</NuxtLink>
-          <NuxtLink to="/scan-processor" class="hover:text-slate-900 dark:hover:text-slate-200">Pipeline</NuxtLink>
+        <div class="flex items-center gap-4 text-xs uppercase tracking-[0.2em] text-slate-400">
+          <NuxtLink to="/ai-assistant" class="hover:text-slate-900">Assistant</NuxtLink>
+          <NuxtLink to="/grading-wizard" class="hover:text-slate-900">Wizard</NuxtLink>
+          <NuxtLink to="/scan-processor" class="hover:text-slate-900">Pipeline</NuxtLink>
         </div>
       </div>
     </footer>
