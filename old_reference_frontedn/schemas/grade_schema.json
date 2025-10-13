@@ -1,0 +1,2479 @@
+{
+  "RubricItem": {
+    "description": "Single grading criterion extracted from a rubric.",
+    "properties": {
+      "criterion": {
+        "title": "Criterion",
+        "type": "string"
+      },
+      "max_points": {
+        "title": "Max Points",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "criterion",
+      "max_points"
+    ],
+    "title": "RubricItem",
+    "type": "object"
+  },
+  "Submission": {
+    "description": "Student submission containing the answer text.",
+    "properties": {
+      "student_name": {
+        "title": "Student Name",
+        "type": "string"
+      },
+      "answer": {
+        "title": "Answer",
+        "type": "string"
+      }
+    },
+    "required": [
+      "student_name",
+      "answer"
+    ],
+    "title": "Submission",
+    "type": "object"
+  },
+  "GradeBreakdownItem": {
+    "description": "Score for a single rubric criterion.",
+    "properties": {
+      "criterion": {
+        "title": "Criterion",
+        "type": "string"
+      },
+      "points_awarded": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "title": "Points Awarded"
+      },
+      "max_points": {
+        "title": "Max Points",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "criterion",
+      "points_awarded",
+      "max_points"
+    ],
+    "title": "GradeBreakdownItem",
+    "type": "object"
+  },
+  "GradeResult": {
+    "$defs": {
+      "GradeBreakdownItem": {
+        "description": "Score for a single rubric criterion.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "points_awarded": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Points Awarded"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "points_awarded",
+          "max_points"
+        ],
+        "title": "GradeBreakdownItem",
+        "type": "object"
+      }
+    },
+    "description": "Complete grading output returned by the API.",
+    "properties": {
+      "total_score": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "title": "Total Score"
+      },
+      "max_score": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "title": "Max Score"
+      },
+      "breakdown": {
+        "anyOf": [
+          {
+            "items": {
+              "$ref": "#/$defs/GradeBreakdownItem"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Breakdown"
+      },
+      "feedback": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Feedback"
+      },
+      "suggestion": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Suggestion"
+      },
+      "reasoning": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reasoning"
+      },
+      "confidence": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confidence"
+      },
+      "confidence_justification": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confidence Justification"
+      }
+    },
+    "required": [
+      "total_score",
+      "max_score"
+    ],
+    "title": "GradeResult",
+    "type": "object"
+  },
+  "BatchGradeRequest": {
+    "$defs": {
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      },
+      "Submission": {
+        "description": "Student submission containing the answer text.",
+        "properties": {
+          "student_name": {
+            "title": "Student Name",
+            "type": "string"
+          },
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "student_name",
+          "answer"
+        ],
+        "title": "Submission",
+        "type": "object"
+      }
+    },
+    "description": "Request body for the batch grading endpoint.",
+    "properties": {
+      "rubric": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rubric"
+      },
+      "submissions": {
+        "items": {
+          "$ref": "#/$defs/Submission"
+        },
+        "title": "Submissions",
+        "type": "array"
+      },
+      "rubric_json": {
+        "anyOf": [
+          {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rubric Json"
+      },
+      "context": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Context"
+      }
+    },
+    "required": [
+      "submissions"
+    ],
+    "title": "BatchGradeRequest",
+    "type": "object"
+  },
+  "QuestionRubric": {
+    "$defs": {
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "description": "Rubric specification for a single question within an exam.",
+    "properties": {
+      "question_id": {
+        "title": "Question Id",
+        "type": "string"
+      },
+      "question_text": {
+        "title": "Question Text",
+        "type": "string"
+      },
+      "max_points": {
+        "title": "Max Points",
+        "type": "integer"
+      },
+      "criteria": {
+        "items": {
+          "$ref": "#/$defs/RubricItem"
+        },
+        "title": "Criteria",
+        "type": "array"
+      }
+    },
+    "required": [
+      "question_id",
+      "question_text",
+      "max_points",
+      "criteria"
+    ],
+    "title": "QuestionRubric",
+    "type": "object"
+  },
+  "ExamRubric": {
+    "$defs": {
+      "QuestionRubric": {
+        "description": "Rubric specification for a single question within an exam.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "title": "Question Text",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "title": "Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "question_text",
+          "max_points",
+          "criteria"
+        ],
+        "title": "QuestionRubric",
+        "type": "object"
+      },
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "description": "Complete exam rubric with multiple questions.",
+    "properties": {
+      "exam_name": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Exam Name"
+      },
+      "rubric_name": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rubric Name"
+      },
+      "general_instructions": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "General Instructions"
+      },
+      "questions": {
+        "items": {
+          "$ref": "#/$defs/QuestionRubric"
+        },
+        "title": "Questions",
+        "type": "array"
+      }
+    },
+    "required": [
+      "questions"
+    ],
+    "title": "ExamRubric",
+    "type": "object"
+  },
+  "ProcessedDocument": {
+    "$defs": {
+      "QuestionRubric": {
+        "description": "Rubric specification for a single question within an exam.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "title": "Question Text",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "title": "Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "question_text",
+          "max_points",
+          "criteria"
+        ],
+        "title": "QuestionRubric",
+        "type": "object"
+      },
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "additionalProperties": true,
+    "description": "Complete document structure with unified schema for scan processor and grading.",
+    "properties": {
+      "exam_name": {
+        "default": "",
+        "title": "Exam Name",
+        "type": "string"
+      },
+      "general_instructions": {
+        "default": "",
+        "title": "General Instructions",
+        "type": "string"
+      },
+      "questions": {
+        "default": [],
+        "items": {
+          "$ref": "#/$defs/QuestionRubric"
+        },
+        "title": "Questions",
+        "type": "array"
+      },
+      "answers": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "default": {},
+        "title": "Answers",
+        "type": "object"
+      },
+      "student_name": {
+        "default": "",
+        "title": "Student Name",
+        "type": "string"
+      },
+      "document_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Document Id"
+      },
+      "original_filename": {
+        "default": "unknown.pdf",
+        "title": "Original Filename",
+        "type": "string"
+      },
+      "upload_type": {
+        "default": "rubric",
+        "title": "Upload Type",
+        "type": "string"
+      },
+      "created_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Created At"
+      },
+      "updated_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Updated At"
+      },
+      "processing_status": {
+        "default": "completed",
+        "title": "Processing Status",
+        "type": "string"
+      },
+      "confidence": {
+        "default": 0.9,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "edit_count": {
+        "default": 0,
+        "title": "Edit Count",
+        "type": "integer"
+      },
+      "last_downloaded": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Last Downloaded"
+      },
+      "pages_processed": {
+        "default": 1,
+        "title": "Pages Processed",
+        "type": "integer"
+      },
+      "extraction_method": {
+        "default": "ai_vision",
+        "title": "Extraction Method",
+        "type": "string"
+      },
+      "custom_instructions": {
+        "default": "",
+        "title": "Custom Instructions",
+        "type": "string"
+      },
+      "debug_prompt": {
+        "default": "",
+        "title": "Debug Prompt",
+        "type": "string"
+      },
+      "original_data": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Original Data"
+      }
+    },
+    "title": "ProcessedDocument",
+    "type": "object"
+  },
+  "QuestionGrade": {
+    "$defs": {
+      "GradeBreakdownItem": {
+        "description": "Score for a single rubric criterion.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "points_awarded": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Points Awarded"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "points_awarded",
+          "max_points"
+        ],
+        "title": "GradeBreakdownItem",
+        "type": "object"
+      }
+    },
+    "description": "Grading result for a single question.",
+    "properties": {
+      "question_id": {
+        "title": "Question Id",
+        "type": "string"
+      },
+      "question_text": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Question Text"
+      },
+      "score": {
+        "title": "Score",
+        "type": "number"
+      },
+      "points_awarded": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Points Awarded"
+      },
+      "max_points": {
+        "title": "Max Points",
+        "type": "integer"
+      },
+      "breakdown": {
+        "items": {
+          "$ref": "#/$defs/GradeBreakdownItem"
+        },
+        "title": "Breakdown",
+        "type": "array"
+      },
+      "feedback": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Feedback"
+      },
+      "confidence": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Confidence"
+      }
+    },
+    "required": [
+      "question_id",
+      "score",
+      "max_points",
+      "breakdown"
+    ],
+    "title": "QuestionGrade",
+    "type": "object"
+  },
+  "ExamSubmission": {
+    "description": "Student submission for multi-question exam.",
+    "properties": {
+      "student_name": {
+        "title": "Student Name",
+        "type": "string"
+      },
+      "answers": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Answers",
+        "type": "object"
+      }
+    },
+    "required": [
+      "student_name",
+      "answers"
+    ],
+    "title": "ExamSubmission",
+    "type": "object"
+  },
+  "ExamGradeResult": {
+    "$defs": {
+      "GradeBreakdownItem": {
+        "description": "Score for a single rubric criterion.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "points_awarded": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Points Awarded"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "points_awarded",
+          "max_points"
+        ],
+        "title": "GradeBreakdownItem",
+        "type": "object"
+      },
+      "QuestionGrade": {
+        "description": "Grading result for a single question.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Question Text"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "points_awarded": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Points Awarded"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "breakdown": {
+            "items": {
+              "$ref": "#/$defs/GradeBreakdownItem"
+            },
+            "title": "Breakdown",
+            "type": "array"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Feedback"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confidence"
+          }
+        },
+        "required": [
+          "question_id",
+          "score",
+          "max_points",
+          "breakdown"
+        ],
+        "title": "QuestionGrade",
+        "type": "object"
+      }
+    },
+    "description": "Complete exam grading result for one student.",
+    "properties": {
+      "student_name": {
+        "title": "Student Name",
+        "type": "string"
+      },
+      "question_grades": {
+        "items": {
+          "$ref": "#/$defs/QuestionGrade"
+        },
+        "title": "Question Grades",
+        "type": "array"
+      },
+      "total_score": {
+        "title": "Total Score",
+        "type": "number"
+      },
+      "max_score": {
+        "title": "Max Score",
+        "type": "integer"
+      },
+      "overall_confidence": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Overall Confidence"
+      },
+      "overall_feedback": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Overall Feedback"
+      }
+    },
+    "required": [
+      "student_name",
+      "question_grades",
+      "total_score",
+      "max_score"
+    ],
+    "title": "ExamGradeResult",
+    "type": "object"
+  },
+  "GradingContext": {
+    "description": "Context and configuration for grading process.",
+    "properties": {
+      "system_prompt": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "System Prompt"
+      },
+      "grading_instructions": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Grading Instructions"
+      },
+      "subject_area": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Subject Area"
+      },
+      "grade_level": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Grade Level"
+      },
+      "additional_context": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Additional Context"
+      }
+    },
+    "title": "GradingContext",
+    "type": "object"
+  },
+  "ExamBatchGradeRequest": {
+    "$defs": {
+      "ExamRubric": {
+        "description": "Complete exam rubric with multiple questions.",
+        "properties": {
+          "exam_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Exam Name"
+          },
+          "rubric_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rubric Name"
+          },
+          "general_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "General Instructions"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/$defs/QuestionRubric"
+            },
+            "title": "Questions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "title": "ExamRubric",
+        "type": "object"
+      },
+      "ExamSubmission": {
+        "description": "Student submission for multi-question exam.",
+        "properties": {
+          "student_name": {
+            "title": "Student Name",
+            "type": "string"
+          },
+          "answers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Answers",
+            "type": "object"
+          }
+        },
+        "required": [
+          "student_name",
+          "answers"
+        ],
+        "title": "ExamSubmission",
+        "type": "object"
+      },
+      "GradingContext": {
+        "description": "Context and configuration for grading process.",
+        "properties": {
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "System Prompt"
+          },
+          "grading_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Grading Instructions"
+          },
+          "subject_area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subject Area"
+          },
+          "grade_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Grade Level"
+          },
+          "additional_context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Additional Context"
+          }
+        },
+        "title": "GradingContext",
+        "type": "object"
+      },
+      "QuestionRubric": {
+        "description": "Rubric specification for a single question within an exam.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "title": "Question Text",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "title": "Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "question_text",
+          "max_points",
+          "criteria"
+        ],
+        "title": "QuestionRubric",
+        "type": "object"
+      },
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "description": "Request body for multi-question exam batch grading.",
+    "properties": {
+      "exam_rubric": {
+        "$ref": "#/$defs/ExamRubric"
+      },
+      "submissions": {
+        "items": {
+          "$ref": "#/$defs/ExamSubmission"
+        },
+        "title": "Submissions",
+        "type": "array"
+      },
+      "grading_context": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/GradingContext"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      }
+    },
+    "required": [
+      "exam_rubric",
+      "submissions"
+    ],
+    "title": "ExamBatchGradeRequest",
+    "type": "object"
+  },
+  "QuestionBatchGradeRequest": {
+    "$defs": {
+      "GradingContext": {
+        "description": "Context and configuration for grading process.",
+        "properties": {
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "System Prompt"
+          },
+          "grading_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Grading Instructions"
+          },
+          "subject_area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Subject Area"
+          },
+          "grade_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Grade Level"
+          },
+          "additional_context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Additional Context"
+          }
+        },
+        "title": "GradingContext",
+        "type": "object"
+      },
+      "QuestionRubric": {
+        "description": "Rubric specification for a single question within an exam.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "title": "Question Text",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "title": "Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "question_text",
+          "max_points",
+          "criteria"
+        ],
+        "title": "QuestionRubric",
+        "type": "object"
+      },
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "description": "Request body for single question batch grading across students.",
+    "properties": {
+      "question_rubric": {
+        "$ref": "#/$defs/QuestionRubric"
+      },
+      "student_answers": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Student Answers",
+        "type": "object"
+      },
+      "grading_context": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/GradingContext"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      }
+    },
+    "required": [
+      "question_rubric",
+      "student_answers"
+    ],
+    "title": "QuestionBatchGradeRequest",
+    "type": "object"
+  },
+  "RubricFeedbackRequest": {
+    "$defs": {
+      "ExamRubric": {
+        "description": "Complete exam rubric with multiple questions.",
+        "properties": {
+          "exam_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Exam Name"
+          },
+          "rubric_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rubric Name"
+          },
+          "general_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "General Instructions"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/$defs/QuestionRubric"
+            },
+            "title": "Questions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "title": "ExamRubric",
+        "type": "object"
+      },
+      "QuestionRubric": {
+        "description": "Rubric specification for a single question within an exam.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "title": "Question Text",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "title": "Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "question_text",
+          "max_points",
+          "criteria"
+        ],
+        "title": "QuestionRubric",
+        "type": "object"
+      },
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "description": "Input model for requesting rubric improvement suggestions.",
+    "properties": {
+      "rubric_json": {
+        "anyOf": [
+          {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rubric Json"
+      },
+      "exam_rubric": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ExamRubric"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "clarification": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Clarification"
+      }
+    },
+    "title": "RubricFeedbackRequest",
+    "type": "object"
+  },
+  "NameRequest": {
+    "description": "Payload for the /api/hello endpoint.",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "title": "NameRequest",
+    "type": "object"
+  },
+  "QuestionTypeRef": {
+    "description": "Reference to a question type in a profile.",
+    "properties": {
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "description": {
+        "title": "Description",
+        "type": "string"
+      },
+      "isCustom": {
+        "default": false,
+        "title": "Iscustom",
+        "type": "boolean"
+      },
+      "backendId": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Backendid"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description"
+    ],
+    "title": "QuestionTypeRef",
+    "type": "object"
+  },
+  "GradingProfile": {
+    "$defs": {
+      "QuestionTypeRef": {
+        "description": "Reference to a question type in a profile.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "isCustom": {
+            "default": false,
+            "title": "Iscustom",
+            "type": "boolean"
+          },
+          "backendId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Backendid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "QuestionTypeRef",
+        "type": "object"
+      }
+    },
+    "description": "AI Assistant grading profile with question types and settings.",
+    "properties": {
+      "id": {
+        "title": "Id",
+        "type": "string"
+      },
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "subject_area": {
+        "title": "Subject Area",
+        "type": "string"
+      },
+      "grade_level": {
+        "title": "Grade Level",
+        "type": "string"
+      },
+      "school_type": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "School Type"
+      },
+      "general_instructions": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "General Instructions"
+      },
+      "question_types": {
+        "items": {
+          "$ref": "#/$defs/QuestionTypeRef"
+        },
+        "title": "Question Types",
+        "type": "array"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "updated_at": {
+        "title": "Updated At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "subject_area",
+      "grade_level",
+      "question_types",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "GradingProfile",
+    "type": "object"
+  },
+  "CreateProfileRequest": {
+    "$defs": {
+      "QuestionTypeRef": {
+        "description": "Reference to a question type in a profile.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "isCustom": {
+            "default": false,
+            "title": "Iscustom",
+            "type": "boolean"
+          },
+          "backendId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Backendid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "QuestionTypeRef",
+        "type": "object"
+      }
+    },
+    "description": "Request to create a new grading profile.",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "subject_area": {
+        "title": "Subject Area",
+        "type": "string"
+      },
+      "grade_level": {
+        "title": "Grade Level",
+        "type": "string"
+      },
+      "school_type": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "School Type"
+      },
+      "general_instructions": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "General Instructions"
+      },
+      "question_types": {
+        "items": {
+          "$ref": "#/$defs/QuestionTypeRef"
+        },
+        "title": "Question Types",
+        "type": "array"
+      }
+    },
+    "required": [
+      "name",
+      "subject_area",
+      "grade_level",
+      "question_types"
+    ],
+    "title": "CreateProfileRequest",
+    "type": "object"
+  },
+  "UpdateProfileRequest": {
+    "$defs": {
+      "QuestionTypeRef": {
+        "description": "Reference to a question type in a profile.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "isCustom": {
+            "default": false,
+            "title": "Iscustom",
+            "type": "boolean"
+          },
+          "backendId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Backendid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "QuestionTypeRef",
+        "type": "object"
+      }
+    },
+    "description": "Request to update an existing grading profile.",
+    "properties": {
+      "name": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Name"
+      },
+      "subject_area": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Subject Area"
+      },
+      "grade_level": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Grade Level"
+      },
+      "school_type": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "School Type"
+      },
+      "general_instructions": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "General Instructions"
+      },
+      "question_types": {
+        "anyOf": [
+          {
+            "items": {
+              "$ref": "#/$defs/QuestionTypeRef"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Question Types"
+      }
+    },
+    "title": "UpdateProfileRequest",
+    "type": "object"
+  },
+  "QuestionTypeDetectionRequest": {
+    "$defs": {
+      "ExamRubric": {
+        "description": "Complete exam rubric with multiple questions.",
+        "properties": {
+          "exam_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Exam Name"
+          },
+          "rubric_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rubric Name"
+          },
+          "general_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "General Instructions"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/$defs/QuestionRubric"
+            },
+            "title": "Questions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "title": "ExamRubric",
+        "type": "object"
+      },
+      "GradingProfile": {
+        "description": "AI Assistant grading profile with question types and settings.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subject_area": {
+            "title": "Subject Area",
+            "type": "string"
+          },
+          "grade_level": {
+            "title": "Grade Level",
+            "type": "string"
+          },
+          "school_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "School Type"
+          },
+          "general_instructions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "General Instructions"
+          },
+          "question_types": {
+            "items": {
+              "$ref": "#/$defs/QuestionTypeRef"
+            },
+            "title": "Question Types",
+            "type": "array"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subject_area",
+          "grade_level",
+          "question_types",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GradingProfile",
+        "type": "object"
+      },
+      "QuestionRubric": {
+        "description": "Rubric specification for a single question within an exam.",
+        "properties": {
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "question_text": {
+            "title": "Question Text",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/RubricItem"
+            },
+            "title": "Criteria",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "question_text",
+          "max_points",
+          "criteria"
+        ],
+        "title": "QuestionRubric",
+        "type": "object"
+      },
+      "QuestionTypeRef": {
+        "description": "Reference to a question type in a profile.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "isCustom": {
+            "default": false,
+            "title": "Iscustom",
+            "type": "boolean"
+          },
+          "backendId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Backendid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "QuestionTypeRef",
+        "type": "object"
+      },
+      "RubricItem": {
+        "description": "Single grading criterion extracted from a rubric.",
+        "properties": {
+          "criterion": {
+            "title": "Criterion",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "criterion",
+          "max_points"
+        ],
+        "title": "RubricItem",
+        "type": "object"
+      }
+    },
+    "description": "Request for AI-powered question type detection.",
+    "properties": {
+      "exam_rubric": {
+        "$ref": "#/$defs/ExamRubric"
+      },
+      "profile": {
+        "$ref": "#/$defs/GradingProfile"
+      }
+    },
+    "required": [
+      "exam_rubric",
+      "profile"
+    ],
+    "title": "QuestionTypeDetectionRequest",
+    "type": "object"
+  },
+  "DetectedQuestionType": {
+    "$defs": {
+      "QuestionTypeRef": {
+        "description": "Reference to a question type in a profile.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "isCustom": {
+            "default": false,
+            "title": "Iscustom",
+            "type": "boolean"
+          },
+          "backendId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Backendid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "QuestionTypeRef",
+        "type": "object"
+      }
+    },
+    "description": "A detected question type with confidence score.",
+    "properties": {
+      "question_index": {
+        "title": "Question Index",
+        "type": "integer"
+      },
+      "question_id": {
+        "title": "Question Id",
+        "type": "string"
+      },
+      "detected_type": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/QuestionTypeRef"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "confidence": {
+        "default": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "reason": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Reason"
+      }
+    },
+    "required": [
+      "question_index",
+      "question_id"
+    ],
+    "title": "DetectedQuestionType",
+    "type": "object"
+  },
+  "QuestionTypeDetectionResponse": {
+    "$defs": {
+      "DetectedQuestionType": {
+        "description": "A detected question type with confidence score.",
+        "properties": {
+          "question_index": {
+            "title": "Question Index",
+            "type": "integer"
+          },
+          "question_id": {
+            "title": "Question Id",
+            "type": "string"
+          },
+          "detected_type": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/QuestionTypeRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "confidence": {
+            "default": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "question_index",
+          "question_id"
+        ],
+        "title": "DetectedQuestionType",
+        "type": "object"
+      },
+      "QuestionTypeRef": {
+        "description": "Reference to a question type in a profile.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "isCustom": {
+            "default": false,
+            "title": "Iscustom",
+            "type": "boolean"
+          },
+          "backendId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Backendid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "QuestionTypeRef",
+        "type": "object"
+      }
+    },
+    "description": "Response containing detected question types for all questions.",
+    "properties": {
+      "question_types": {
+        "items": {
+          "$ref": "#/$defs/DetectedQuestionType"
+        },
+        "title": "Question Types",
+        "type": "array"
+      },
+      "processing_time_ms": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Processing Time Ms"
+      }
+    },
+    "required": [
+      "question_types"
+    ],
+    "title": "QuestionTypeDetectionResponse",
+    "type": "object"
+  },
+  "GradeRequest": {
+    "description": "Request model for single submission grading.\n\nAttributes:\n    rubric (str): Text-based rubric description\n    submission (str): Student's answer to be graded\n    rubric_json (list[dict] | None): Structured rubric criteria as alternative to text rubric\n    context (str | None): Additional grading context or instructions",
+    "properties": {
+      "rubric": {
+        "title": "Rubric",
+        "type": "string"
+      },
+      "submission": {
+        "title": "Submission",
+        "type": "string"
+      },
+      "rubric_json": {
+        "anyOf": [
+          {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Rubric Json"
+      },
+      "context": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Context"
+      }
+    },
+    "required": [
+      "rubric",
+      "submission"
+    ],
+    "title": "GradeRequest",
+    "type": "object"
+  },
+  "CreateCustomTypeRequest": {
+    "description": "Request to create a new custom question type.",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "description": {
+        "title": "Description",
+        "type": "string"
+      },
+      "prompt": {
+        "title": "Prompt",
+        "type": "string"
+      },
+      "created_by": {
+        "default": "teacher",
+        "title": "Created By",
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "prompt"
+    ],
+    "title": "CreateCustomTypeRequest",
+    "type": "object"
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://teacherai.com/schemas/master_schema.json",
+  "title": "TeacherAI Grading System Schema",
+  "description": "Unified schema for the TeacherAI exam grading system",
+  "definitions": {
+    "RubricItem": {
+      "type": "object",
+      "description": "Single grading criterion",
+      "properties": {
+        "criterion": {
+          "type": "string",
+          "description": "Description of the grading criterion"
+        },
+        "max_points": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum points for this criterion"
+        }
+      },
+      "required": ["criterion", "max_points"]
+    },
+    "QuestionRubric": {
+      "type": "object",
+      "description": "Rubric for a single question",
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "description": "Unique identifier for the question"
+        },
+        "question_text": {
+          "type": "string",
+          "description": "The question text"
+        },
+        "max_points": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum points for this question"
+        },
+        "criteria": {
+          "type": "array",
+          "description": "Grading criteria for this question",
+          "items": {
+            "$ref": "#/definitions/RubricItem"
+          }
+        }
+      },
+      "required": ["question_id", "question_text", "max_points", "criteria"]
+    },
+    "ExamRubric": {
+      "type": "object",
+      "description": "Complete exam rubric with multiple questions",
+      "properties": {
+        "exam_name": {
+          "type": "string",
+          "description": "Name of the exam"
+        },
+        "rubric_name": {
+          "type": "string",
+          "description": "Legacy field for backward compatibility"
+        },
+        "questions": {
+          "type": "array",
+          "description": "Array of questions in the exam",
+          "items": {
+            "$ref": "#/definitions/QuestionRubric"
+          }
+        }
+      },
+      "required": ["questions"],
+      "anyOf": [
+        {"required": ["exam_name"]},
+        {"required": ["rubric_name"]}
+      ]
+    },
+    "ExamSubmission": {
+      "type": "object",
+      "description": "Student submission for multi-question exam",
+      "properties": {
+        "student_name": {
+          "type": "string",
+          "description": "Name of the student"
+        },
+        "answers": {
+          "type": "object",
+          "description": "Map of question_id to answer text",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["student_name", "answers"]
+    },
+    "GradeBreakdownItem": {
+      "type": "object",
+      "description": "Score breakdown for a single criterion",
+      "properties": {
+        "criterion": {
+          "type": "string",
+          "description": "The grading criterion"
+        },
+        "points_awarded": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Points awarded for this criterion"
+        },
+        "max_points": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum possible points"
+        }
+      },
+      "required": ["criterion", "points_awarded", "max_points"]
+    },
+    "QuestionGrade": {
+      "type": "object",
+      "description": "Grading result for a single question",
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "description": "Question identifier"
+        },
+        "question_text": {
+          "type": "string",
+          "description": "The question text"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Points awarded for this question"
+        },
+        "max_points": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum possible points"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "AI confidence in grading (0-1)"
+        },
+        "feedback": {
+          "type": "string",
+          "description": "Detailed feedback for this question"
+        },
+        "breakdown": {
+          "type": "array",
+          "description": "Detailed breakdown by criteria",
+          "items": {
+            "$ref": "#/definitions/GradeBreakdownItem"
+          }
+        }
+      },
+      "required": ["question_id", "score", "max_points"]
+    },
+    "ExamGradeResult": {
+      "type": "object",
+      "description": "Complete exam grading result for one student",
+      "properties": {
+        "student_name": {
+          "type": "string",
+          "description": "Name of the student"
+        },
+        "question_grades": {
+          "type": "array",
+          "description": "Grades for each question",
+          "items": {
+            "$ref": "#/definitions/QuestionGrade"
+          }
+        },
+        "total_score": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total points earned"
+        },
+        "max_score": {
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Maximum possible points"
+        },
+        "overall_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Overall confidence in grading"
+        },
+        "overall_feedback": {
+          "type": "string",
+          "description": "Overall feedback for the exam"
+        }
+      },
+      "required": ["student_name", "question_grades", "total_score", "max_score"]
+    },
+    "GradingContext": {
+      "type": "object",
+      "description": "Context for AI grading process",
+      "properties": {
+        "subject_area": {
+          "type": "string",
+          "description": "Subject area (e.g., Biology, Math)"
+        },
+        "grade_level": {
+          "type": "string", 
+          "description": "Grade level (e.g., High School, College)"
+        },
+        "grading_instructions": {
+          "type": "string",
+          "description": "Custom grading instructions"
+        },
+        "system_prompt": {
+          "type": "string",
+          "description": "System prompt for AI"
+        },
+        "additional_context": {
+          "type": "string",
+          "description": "Additional context information"
+        }
+      }
+    },
+    "ExamBatchGradeRequest": {
+      "type": "object",
+      "description": "Request for grading multiple exam submissions",
+      "properties": {
+        "exam_rubric": {
+          "$ref": "#/definitions/ExamRubric"
+        },
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExamSubmission"
+          }
+        },
+        "grading_context": {
+          "$ref": "#/definitions/GradingContext"
+        }
+      },
+      "required": ["exam_rubric", "submissions"]
+    },
+    "RubricFeedbackRequest": {
+      "type": "object",
+      "description": "Request for AI feedback on rubric",
+      "properties": {
+        "exam_rubric": {
+          "$ref": "#/definitions/ExamRubric"
+        },
+        "clarification": {
+          "type": "string",
+          "description": "Specific area to focus feedback on"
+        }
+      },
+      "required": ["exam_rubric"]
+    }
+  }
+}

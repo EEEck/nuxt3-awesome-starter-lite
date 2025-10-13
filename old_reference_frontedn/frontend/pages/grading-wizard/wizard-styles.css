@@ -1,0 +1,349 @@
+/**
+ * Grading Wizard Styles
+ * Extends scan processor wizard styling for grading workflow
+ */
+
+/* Wizard Container */
+.grading-wizard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Wizard Header */
+.wizard-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.wizard-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.wizard-header p {
+    font-size: 1.1rem;
+    color: #9ca3af;
+}
+
+/* Step Navigation (reused from scan processor) */
+.step-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 1rem;
+    border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.step:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.step.active {
+    background: rgba(59, 130, 246, 0.2);
+    border: 2px solid rgba(59, 130, 246, 0.4);
+}
+
+.step.completed {
+    background: rgba(34, 197, 94, 0.2);
+    border: 2px solid rgba(34, 197, 94, 0.4);
+}
+
+.step-number {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(75, 85, 99, 0.8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.step.completed .step-number {
+    background: #22c55e;
+    color: #ffffff;
+}
+
+.step-title {
+    font-weight: 500;
+    color: #d1d5db;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.step.active .step-title {
+    color: #60a5fa;
+    font-weight: 600;
+}
+
+.step.completed .step-title {
+    color: #4ade80;
+    font-weight: 600;
+}
+
+/* Step Content */
+.step-content-container {
+    margin-bottom: 2rem;
+}
+
+.wizard-step-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.step-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.step-header h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.step-header p {
+    font-size: 1rem;
+    color: #9ca3af;
+}
+
+.step-body {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Upload Zones */
+.upload-zone {
+    border: 2px dashed #4b5563;
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(31, 41, 55, 0.3);
+}
+
+.upload-zone:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.upload-zone.active {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: #6b7280;
+}
+
+.upload-zone h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+.upload-zone p {
+    color: #9ca3af;
+    margin: 0;
+}
+
+/* Step Previews */
+.step-preview {
+    margin-top: 2rem;
+}
+
+/* Navigation Controls */
+.wizard-navigation {
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 1rem;
+    border: 1px solid rgba(75, 85, 99, 0.3);
+    padding: 1.5rem;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+/* Progress Containers */
+.progress-container {
+    margin: 1.5rem 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(75, 85, 99, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-align: center;
+}
+
+/* Export Options */
+.export-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    background: rgba(31, 41, 55, 0.5);
+    border: 2px solid rgba(75, 85, 99, 0.3);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.export-option-btn:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Profile Preview */
+.profile-preview {
+    margin-top: 1rem;
+}
+
+/* Results Table Enhancements */
+.table {
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.table th {
+    background: rgba(75, 85, 99, 0.5);
+    padding: 1rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.table td {
+    padding: 1rem;
+    color: #d1d5db;
+    border-bottom: 1px solid rgba(75, 85, 99, 0.2);
+}
+
+.table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* Confidence Indicators */
+.confidence-high {
+    color: #22c55e;
+}
+
+.confidence-medium {
+    color: #f59e0b;
+}
+
+.confidence-low {
+    color: #ef4444;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .grading-wizard-container {
+        padding: 1rem;
+    }
+    
+    .step-nav {
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .step {
+        min-width: 80px;
+        padding: 0.75rem;
+    }
+    
+    .step-number {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
+    }
+    
+    .wizard-header h1 {
+        font-size: 2rem;
+    }
+    
+    .step-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .upload-zone {
+        padding: 2rem 1rem;
+    }
+    
+    .nav-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .nav-buttons .flex-1 {
+        display: none;
+    }
+}

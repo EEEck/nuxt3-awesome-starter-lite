@@ -5,12 +5,33 @@ import type { Answers, Results, Rubric } from '~/lib/schemas'
 
 export const WIZARD_TOTAL_STEPS = 6
 
+const stepOrder = ['profile', 'rubric-upload', 'rubric-edit', 'answers-upload', 'grade', 'results'] as const
+
+export type WizardStep = typeof stepOrder[number]
+export type StepAlias = WizardStep | 'scan' | 'review' | 'extract' | 'export'
+
+const stepAliases: Record<StepAlias, WizardStep> = {
+  profile: 'profile',
+  'rubric-upload': 'rubric-upload',
+  'rubric-edit': 'rubric-edit',
+  'answers-upload': 'answers-upload',
+  grade: 'grade',
+  results: 'results',
+  scan: 'profile',
+  review: 'profile',
+  extract: 'answers-upload',
+  export: 'results'
+}
+
 export const useWizardStore = defineStore('wizard', () => {
   const step = ref(0)
   const profileId = ref<string | null>(null)
   const rubric = ref<Rubric | null>(null)
   const answers = ref<Answers | null>(null)
   const results = ref<Results | null>(null)
+
+  const pdfFile = ref<File | null>(null)
+  const selectedPageIndices = ref<number[]>([])
 
   const canRun = computed(() => Boolean(profileId.value && rubric.value && answers.value))
 
@@ -28,6 +49,17 @@ export const useWizardStore = defineStore('wizard', () => {
 
   function setResults(payload: unknown) {
     results.value = payload ? ResultsSchema.parse(payload) : null
+  }
+
+  function setPdf(file: File | null) {
+    pdfFile.value = file
+    if (!file) {
+      selectedPageIndices.value = []
+    }
+  }
+
+  function setSelectedPages(pages: number[]) {
+    selectedPageIndices.value = Array.from(new Set(pages)).sort((a, b) => a - b)
   }
 
   function next() {
@@ -48,12 +80,22 @@ export const useWizardStore = defineStore('wizard', () => {
     }
   }
 
+  function go(name: StepAlias) {
+    const normalized = stepAliases[name]
+    if (!normalized) return
+    const target = stepOrder.indexOf(normalized)
+    if (target !== -1) {
+      goTo(target)
+    }
+  }
+
   function reset() {
     step.value = 0
     profileId.value = null
     rubric.value = null
     answers.value = null
     results.value = null
+    setPdf(null)
   }
 
   return {
@@ -62,15 +104,22 @@ export const useWizardStore = defineStore('wizard', () => {
     rubric,
     answers,
     results,
+    pdfFile,
+    selectedPageIndices,
     canRun,
     setProfile,
     setRubric,
     setAnswers,
     setResults,
+    setPdf,
+    setSelectedPages,
     next,
     previous,
     goTo,
+    go,
     reset,
-    totalSteps: WIZARD_TOTAL_STEPS,
+    totalSteps: WIZARD_TOTAL_STEPS
   }
 })
+
+export const useWizard = useWizardStore
