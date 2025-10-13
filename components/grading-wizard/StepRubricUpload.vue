@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useWizard } from '~/stores/wizard'
 const wiz = useWizard()
 const error = ref<string | null>(null)

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useWizard } from '~/stores/wizard'
 import LegacyPdfPicker from './LegacyPdfPicker.vue'
 
@@ -26,14 +27,14 @@ function proceed() {
     <input type="file" accept="application/pdf" @change="onPick" />
     <p v-if="err" class="text-sm text-red-600">{{ err }}</p>
 
-    <LegacyPdfPicker v-if="$pinia.state.value.wizard.pdfFile" />
+    <LegacyPdfPicker v-if="wiz.pdfFile" />
 
     <div class="mt-3 flex items-center justify-between">
       <div class="text-sm text-gray-600">
         Selected pages:
-        <span v-if="($pinia.state.value.wizard.selectedPageIndices?.length || 0) === 0">none</span>
+        <span v-if="(wiz.selectedPageIndices?.length || 0) === 0">none</span>
         <span v-else class="inline-flex flex-wrap gap-1">
-          <span v-for="i in $pinia.state.value.wizard.selectedPageIndices" :key="i"
+          <span v-for="i in wiz.selectedPageIndices" :key="i"
                 class="px-2 py-0.5 rounded-full border text-xs">#{{ i+1 }}</span>
         </span>
       </div>
