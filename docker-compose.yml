@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"   # Nuxt dev server
+      - "24678:24678" # Vite HMR
+    environment:
+      NODE_ENV: development
+      NUXT_HOST: 0.0.0.0
+      NUXT_PORT: 3000
+      CHOKIDAR_USEPOLLING: "1"
+      WATCHPACK_POLLING: "true"
+      NUXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - ./:/app                 # your source code
+      - node_modules:/app/node_modules
+      - pnpm-store:/pnpm/store  # pnpm cache for faster installs
+    command: sh -c "pnpm install && pnpm dev --host 0.0.0.0"
+
+volumes:
+  node_modules:
+  pnpm-store:
+

@@ -99,3 +99,39 @@ range keeps you on the latest minor updates automatically.
 ## License
 
 MIT
+# Docker
+## Quick Start
+1) Build and start the dev server
+`docker compose up --build`
+
+2) Open the app
+→ http://localhost:3000
+
+## Comon Tasks
+Rebuild after changing dependencies or Dockerfile
+`docker compose build --no-cache`
+`docker compose up`
+Install new package 
+# runtime dep
+`docker compose exec web pnpm add <package>`
+
+# dev dep
+`docker compose exec web pnpm add -D <package>`
+
+## Ports & volumes
+
+App: http://localhost:3000
+
+HMR (WebSocket): 24678
+
+Volumes: ./ → /app (your code, live-mounted)
+
+named volumes for /app/node_modules and /pnpm/store (fast installs)
+
+Troubleshooting
+
+Changes don’t hot-reload? We enable polling (CHOKIDAR_USEPOLLING=1) in the service. If needed, restart docker compose up.
+
+Package install fails? Run the add command via docker compose exec web … so node_modules stays inside the container.
+
+Port in use? Change the host port mapping in docker-compose.yml (e.g., 3001:3000) and restart.
