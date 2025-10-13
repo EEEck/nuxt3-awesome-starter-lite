@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modular Scan Processor Test</title>
+    <base href="/">
+    <style>
+        body {
+            background: #1e1e1e;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 8px;
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .passed { background: #22c55e; color: white; }
+        .failed { background: #ef4444; color: white; }
+        .pending { background: #f59e0b; color: white; }
+        
+        #scan-processor-container {
+            border: 2px solid #60a5fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+        }
+        
+        .error-log {
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .error { color: #ef4444; }
+        .success { color: #22c55e; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Modular Scan Processor Test</h1>
+        <p>Testing refactored modular architecture against original monolithic behavior</p>
+        
+        <div class="test-section">
+            <h2>Module Loading Tests</h2>
+            <div id="module-tests">
+                <div>FileManagement Service <span id="file-management-status" class="test-status pending">PENDING</span></div>
+                <div>DocumentProcessing Service <span id="document-processing-status" class="test-status pending">PENDING</span></div>
+                <div>PDFService <span id="pdf-service-status" class="test-status pending">PENDING</span></div>
+                <div>RenderingService <span id="rendering-service-status" class="test-status pending">PENDING</span></div>
+                <div>EnterpriseViewer <span id="enterprise-viewer-status" class="test-status pending">PENDING</span></div>
+                <div>EventManagement <span id="event-management-status" class="test-status pending">PENDING</span></div>
+                <div>SessionManagement <span id="session-management-status" class="test-status pending">PENDING</span></div>
+                <div>UndoRedo <span id="undo-redo-status" class="test-status pending">PENDING</span></div>
+                <div>CardEditing <span id="card-editing-status" class="test-status pending">PENDING</span></div>
+                <div>QuestionManagement <span id="question-management-status" class="test-status pending">PENDING</span></div>
+                <div>Main Orchestrator <span id="main-orchestrator-status" class="test-status pending">PENDING</span></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Interface Tests</h2>
+            <div id="interface-tests">
+                <div>Mode Selection Rendering <span id="mode-selection-status" class="test-status pending">PENDING</span></div>
+                <div>Event Attachment <span id="event-attachment-status" class="test-status pending">PENDING</span></div>
+                <div>Navigation State <span id="navigation-status" class="test-status pending">PENDING</span></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Live Scan Processor Interface</h2>
+            <div id="scan-processor-container">
+                <!-- Modular scan processor will render here -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Error Log</h2>
+            <div id="error-log" class="error-log">
+                <div class="info">Starting tests...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Test harness for modular scan processor
+        
+        const log = (message, type = 'info') => {
+            const errorLog = document.getElementById('error-log');
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            errorLog.appendChild(entry);
+            errorLog.scrollTop = errorLog.scrollHeight;
+        };
+        
+        const setStatus = (elementId, status, message = '') => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = status.toUpperCase();
+                element.className = `test-status ${status}`;
+                if (message) element.title = message;
+            }
+        };
+        
+        // Test 1: Module Loading
+        async function testModuleLoading() {
+            console.log('📦 Testing module imports...');
+            log('Testing module imports...');
+            
+            const modules = [
+                { name: 'FileManagement', path: '/pages/scan-processor/services/FileManagement.js', id: 'file-management-status' },
+                { name: 'DocumentProcessing', path: '/pages/scan-processor/services/DocumentProcessing.js', id: 'document-processing-status' },
+                { name: 'PDFService', path: '/pages/scan-processor/services/PDFService.js', id: 'pdf-service-status' },
+                { name: 'RenderingService', path: '/pages/scan-processor/services/RenderingService.js', id: 'rendering-service-status' },
+                { name: 'EnterpriseViewer', path: '/pages/scan-processor/services/EnterpriseViewer.js', id: 'enterprise-viewer-status' },
+                { name: 'EventManagement', path: '/pages/scan-processor/services/EventManagement.js', id: 'event-management-status' },
+                { name: 'SessionManagement', path: '/pages/scan-processor/services/SessionManagement.js', id: 'session-management-status' },
+                { name: 'UndoRedo', path: '/pages/scan-processor/services/UndoRedo.js', id: 'undo-redo-status' },
+                { name: 'CardEditing', path: '/pages/scan-processor/services/CardEditing.js', id: 'card-editing-status' },
+                { name: 'QuestionManagement', path: '/pages/scan-processor/services/QuestionManagement.js', id: 'question-management-status' }
+            ];
+            
+            for (const module of modules) {
+                try {
+                    const imported = await import(module.path);
+                    if (imported.default) {
+                        setStatus(module.id, 'passed');
+                        log(`✓ ${module.name} loaded successfully`, 'success');
+                    } else {
+                        setStatus(module.id, 'failed', 'No default export');
+                        log(`✗ ${module.name} missing default export`, 'error');
+                    }
+                } catch (error) {
+                    setStatus(module.id, 'failed', error.message);
+                    log(`✗ ${module.name} failed to load: ${error.message}`, 'error');
+                }
+            }
+            
+            // Test main orchestrator
+            try {
+                const ScanProcessor = await import('/pages/scan-processor/index.js');
+                if (ScanProcessor.default) {
+                    setStatus('main-orchestrator-status', 'passed');
+                    log('✓ Main orchestrator loaded successfully', 'success');
+                    return ScanProcessor.default;
+                } else {
+                    setStatus('main-orchestrator-status', 'failed', 'No default export');
+                    log('✗ Main orchestrator missing default export', 'error');
+                    return null;
+                }
+            } catch (error) {
+                setStatus('main-orchestrator-status', 'failed', error.message);
+                log(`✗ Main orchestrator failed to load: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Test 2: Interface Rendering
+        async function testInterface(ScanProcessor) {
+            if (!ScanProcessor) {
+                log('Skipping interface tests - ScanProcessor not loaded', 'error');
+                return;
+            }
+            
+            try {
+                log('Creating ScanProcessor instance...');
+                const processor = new ScanProcessor();
+                
+                log('Initializing processor...');
+                await processor.init();
+                
+                // Test mode selection rendering
+                const container = document.getElementById('scan-processor-container');
+                if (container && container.innerHTML.trim()) {
+                    setStatus('mode-selection-status', 'passed');
+                    log('✓ Mode selection rendered successfully', 'success');
+                } else {
+                    setStatus('mode-selection-status', 'failed', 'No content rendered');
+                    log('✗ Mode selection failed to render', 'error');
+                }
+                
+                // Test event attachment
+                const startBtn = document.getElementById('start-btn');
+                const continueBtn = document.getElementById('continue-btn');
+                if (startBtn || continueBtn) {
+                    setStatus('event-attachment-status', 'passed');
+                    log('✓ Event attachment working - buttons found', 'success');
+                } else {
+                    setStatus('event-attachment-status', 'failed', 'No interactive elements found');
+                    log('✗ Event attachment failed - no buttons found', 'error');
+                }
+                
+                // Test navigation state
+                if (processor.currentStep === 'mode-selection') {
+                    setStatus('navigation-status', 'passed');
+                    log('✓ Navigation state initialized correctly', 'success');
+                } else {
+                    setStatus('navigation-status', 'failed', `Expected 'mode-selection', got '${processor.currentStep}'`);
+                    log(`✗ Navigation state incorrect: ${processor.currentStep}`, 'error');
+                }
+                
+                window.testProcessor = processor; // Make available for manual testing
+                log('✓ ScanProcessor instance available as window.testProcessor', 'success');
+                
+            } catch (error) {
+                setStatus('mode-selection-status', 'failed', error.message);
+                setStatus('event-attachment-status', 'failed', error.message);
+                setStatus('navigation-status', 'failed', error.message);
+                log(`✗ Interface test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run all tests
+        async function runTests() {
+            try {
+                console.log('🚀 Starting modular scan processor tests...');
+                log('Starting modular scan processor tests...');
+                
+                const ScanProcessor = await testModuleLoading();
+                await testInterface(ScanProcessor);
+                
+                log('All tests completed. Check status indicators above.', 'success');
+                
+                if (window.testProcessor) {
+                    log('You can now interact with the scan processor interface above.', 'info');
+                    log('The interface should behave identically to the original monolithic version.', 'info');
+                }
+            } catch (error) {
+                console.error('❌ Test execution failed:', error);
+                log(`Test execution failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Start tests when page loads
+        console.log('🔄 Page loaded, starting tests...');
+        runTests();
+    </script>
+</body>
+</html>

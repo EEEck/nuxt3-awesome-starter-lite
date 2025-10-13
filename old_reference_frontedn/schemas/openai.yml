@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: Grading Assistant
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    GradeRubric:
+      type: object
+      properties:
+        rubric_name:
+          type: string
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionRubric'
+      required: [rubric_name, questions]
+
+    QuestionRubric:
+      type: object
+      properties:
+        question_id:
+          type: string
+        question_text:
+          type: string
+        max_points:
+          type: integer
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/RubricItem'
+      required: [question_id, question_text, max_points, criteria]
+
+    RubricItem:
+      type: object
+      properties:
+        criterion:
+          type: string
+        max_points:
+          type: integer
+      required: [criterion, max_points]
