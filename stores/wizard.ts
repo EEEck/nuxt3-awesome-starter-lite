@@ -1,4 +1,3 @@
-import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { AnswersSchema, ResultsSchema, RubricSchema } from '~/lib/schemas'
 import type { Answers, Results, Rubric } from '~/lib/schemas'
@@ -23,102 +22,83 @@ const stepAliases: Record<StepAlias, WizardStep> = {
   export: 'results'
 }
 
-export const useWizardStore = defineStore('wizard', () => {
-  const step = ref(0)
-  const profileId = ref<string | null>(null)
-  const rubric = ref<Rubric | null>(null)
-  const answers = ref<Answers | null>(null)
-  const results = ref<Results | null>(null)
+type WizardState = {
+  step: number
+  profileId: string | null
+  rubric: Rubric | null
+  answers: Answers | null
+  results: Results | null
+  pdfFile: File | null
+  selectedPageIndices: number[]
+}
 
-  const pdfFile = ref<File | null>(null)
-  const selectedPageIndices = ref<number[]>([])
-
-  const canRun = computed(() => Boolean(profileId.value && rubric.value && answers.value))
-
-  function setProfile(id: string | null) {
-    profileId.value = id
-  }
-
-  function setRubric(payload: unknown) {
-    rubric.value = payload ? RubricSchema.parse(payload) : null
-  }
-
-  function setAnswers(payload: unknown) {
-    answers.value = payload ? AnswersSchema.parse(payload) : null
-  }
-
-  function setResults(payload: unknown) {
-    results.value = payload ? ResultsSchema.parse(payload) : null
-  }
-
-  function setPdf(file: File | null) {
-    pdfFile.value = file
-    if (!file) {
-      selectedPageIndices.value = []
+export const useWizardStore = defineStore('wizard', {
+  state: (): WizardState => ({
+    step: 0,
+    profileId: null,
+    rubric: null,
+    answers: null,
+    results: null,
+    pdfFile: null,
+    selectedPageIndices: []
+  }),
+  getters: {
+    canRun: (state) => Boolean(state.profileId && state.rubric && state.answers),
+    totalSteps: () => WIZARD_TOTAL_STEPS
+  },
+  actions: {
+    setProfile(id: string | null) {
+      this.profileId = id
+    },
+    setRubric(payload: unknown) {
+      this.rubric = payload ? RubricSchema.parse(payload) : null
+    },
+    setAnswers(payload: unknown) {
+      this.answers = payload ? AnswersSchema.parse(payload) : null
+    },
+    setResults(payload: unknown) {
+      this.results = payload ? ResultsSchema.parse(payload) : null
+    },
+    setPdf(file: File | null) {
+      this.pdfFile = file
+      if (!file) {
+        this.selectedPageIndices = []
+      }
+    },
+    setSelectedPages(pages: number[]) {
+      this.selectedPageIndices = Array.from(new Set(pages)).sort((a, b) => a - b)
+    },
+    next() {
+      if (this.step < WIZARD_TOTAL_STEPS - 1) {
+        this.step += 1
+      }
+    },
+    previous() {
+      if (this.step > 0) {
+        this.step -= 1
+      }
+    },
+    goTo(target: number) {
+      if (target >= 0 && target < WIZARD_TOTAL_STEPS) {
+        this.step = target
+      }
+    },
+    go(name: StepAlias) {
+      const normalized = stepAliases[name]
+      if (!normalized) return
+      const target = stepOrder.indexOf(normalized)
+      if (target !== -1) {
+        this.goTo(target)
+      }
+    },
+    reset() {
+      this.step = 0
+      this.profileId = null
+      this.rubric = null
+      this.answers = null
+      this.results = null
+      this.setPdf(null)
     }
-  }
-
-  function setSelectedPages(pages: number[]) {
-    selectedPageIndices.value = Array.from(new Set(pages)).sort((a, b) => a - b)
-  }
-
-  function next() {
-    if (step.value < WIZARD_TOTAL_STEPS - 1) {
-      step.value += 1
-    }
-  }
-
-  function previous() {
-    if (step.value > 0) {
-      step.value -= 1
-    }
-  }
-
-  function goTo(target: number) {
-    if (target >= 0 && target < WIZARD_TOTAL_STEPS) {
-      step.value = target
-    }
-  }
-
-  function go(name: StepAlias) {
-    const normalized = stepAliases[name]
-    if (!normalized) return
-    const target = stepOrder.indexOf(normalized)
-    if (target !== -1) {
-      goTo(target)
-    }
-  }
-
-  function reset() {
-    step.value = 0
-    profileId.value = null
-    rubric.value = null
-    answers.value = null
-    results.value = null
-    setPdf(null)
-  }
-
-  return {
-    step,
-    profileId,
-    rubric,
-    answers,
-    results,
-    pdfFile,
-    selectedPageIndices,
-    canRun,
-    setProfile,
-    setRubric,
-    setAnswers,
-    setResults,
-    setPdf,
-    setSelectedPages,
-    next,
-    previous,
-    goTo,
-    go,
-    reset,
-    totalSteps: WIZARD_TOTAL_STEPS
   }
 })
 
