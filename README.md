@@ -118,6 +118,13 @@ Install new package
 # dev dep
 `docker compose exec web pnpm add -D <package>`
 
+clean reset: 
+If the named volumes are stale, do a clean reset:
+```bash
+docker compose down
+docker volume rm nuxt3-awesome-starter-lite_node_modules nuxt3-awesome-starter-lite_pnpm-store
+docker compose up --build
+```
 ## Ports & volumes
 
 App: http://localhost:3000
