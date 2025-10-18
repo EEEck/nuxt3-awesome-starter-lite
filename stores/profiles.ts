@@ -10,9 +10,10 @@ export interface QuestionType {
 export interface GradingProfile {
   id: string
   name: string
-  subject?: string
+  subjectArea?: string
   gradeLevel?: string
-  description?: string
+  schoolType?: string
+  generalInstructions?: string
   questionTypes: QuestionType[]
   createdAt: string
 }
