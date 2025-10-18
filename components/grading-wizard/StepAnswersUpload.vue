@@ -38,16 +38,15 @@ const uploadAnswers = () => {
 </script>
 
 <template>
-  <section class="space-y-4">
+  <section class="space-y-6">
     <header class="space-y-1">
       <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">Step 4</p>
-      <h2 class="text-2xl font-semibold">Upload student answers</h2>
-      <p class="text-slate-600 dark:text-slate-300">
-        Provide structured responses captured from scans. Each submission should include the student identifier and answers.
-      </p>
+      <h2 class="text-2xl font-semibold">Upload Student Answers</h2>
+      <p class="text-slate-600 dark:text-slate-300">Upload JSON containing student responses to exam questions.</p>
     </header>
     <div class="space-y-2">
       <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Answers JSON</label>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Expected format: [{"studentId": "s-001", "responses": [{"questionId": "q1", "answer": "..."}]}]</p>
       <textarea
         v-model="answersText"
         rows="8"

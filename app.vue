@@ -1,10 +1,5 @@
 <script lang="ts" setup>
 const title = 'Grading Wizard'
-const route = useRoute()
-
-if (route.path === '/') {
-  navigateTo('/dashboard', { replace: true })
-}
 
 useHead({
   title,
