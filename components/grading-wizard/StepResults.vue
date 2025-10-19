@@ -11,13 +11,11 @@ const startOver = () => {
 </script>
 
 <template>
-  <section class="space-y-4">
+  <section class="space-y-6">
     <header class="space-y-1">
       <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">Step 6</p>
-      <h2 class="text-2xl font-semibold">Results summary</h2>
-      <p class="text-slate-600 dark:text-slate-300">
-        Review the aggregate outcome from the grading run. Detailed exports will be added later.
-      </p>
+      <h2 class="text-2xl font-semibold">Grading Complete</h2>
+      <p class="text-slate-600 dark:text-slate-300">Review the outcome from the grading run.</p>
     </header>
     <div
       v-if="results"

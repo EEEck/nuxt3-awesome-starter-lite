@@ -3,7 +3,11 @@ import { defineStore } from 'pinia'
 import { AnswersSchema, ResultsSchema, RubricSchema } from '~/lib/schemas'
 import type { Answers, Results, Rubric } from '~/lib/schemas'
 
-export const WIZARD_TOTAL_STEPS = 6
+export type Step =
+  | 'profile'
+  | 'scan' | 'review' | 'extract'
+  | 'rubric-upload' | 'rubric-edit' | 'answers-upload'
+  | 'grade' | 'results' | 'export'
 
 const stepOrder = ['profile', 'rubric-upload', 'rubric-edit', 'answers-upload', 'grade', 'results'] as const
 
@@ -39,9 +43,12 @@ export const useWizardStore = defineStore('wizard', () => {
     profileId.value = id
   }
 
-  function setRubric(payload: unknown) {
-    rubric.value = payload ? RubricSchema.parse(payload) : null
-  }
+  // --- Profile & Answers (newer flow) ---
+  profileId?: string | null
+  answers?: unknown | null
+
+  // --- Grade (results) ---
+  results?: GradeResult
 
   function setAnswers(payload: unknown) {
     answers.value = payload ? AnswersSchema.parse(payload) : null
@@ -68,58 +75,70 @@ export const useWizardStore = defineStore('wizard', () => {
     }
   }
 
-  function previous() {
-    if (step.value > 0) {
-      step.value -= 1
-    }
-  }
+const STEP_ORDER: Step[] = [
+  'profile',
+  'rubric-upload',
+  'rubric-edit',
+  'answers-upload',
+  'grade',
+  'results',
+]
 
-  function goTo(target: number) {
-    if (target >= 0 && target < WIZARD_TOTAL_STEPS) {
-      step.value = target
-    }
-  }
+export const useWizard = defineStore('wizard', {
+  state: (): WizardState => ({
+    step: 'profile', // default entry step for the grading wizard
+    docs: [],
+    rubric: null,
+    profileId: null,
+    answers: null,
+    busy: false
+  }),
+  getters: {
+    canRun: (state) => !!(state.profileId && state.rubric && state.answers),
+  },
+  actions: {
+    go(step: Step) { this.step = step },
+    next() {
+      const i = STEP_ORDER.indexOf(this.step)
+      if (i >= 0 && i < STEP_ORDER.length - 1) this.step = STEP_ORDER[i + 1]
+    },
+    prev() {
+      const i = STEP_ORDER.indexOf(this.step)
+      if (i > 0) this.step = STEP_ORDER[i - 1]
+    },
+    setBusy(v: boolean) { this.busy = v },
+    fail(msg: string) { this.error = msg; this.busy = false },
+    clearError() { this.error = undefined },
 
-  function go(name: StepAlias) {
-    const normalized = stepAliases[name]
-    if (!normalized) return
-    const target = stepOrder.indexOf(normalized)
-    if (target !== -1) {
-      goTo(target)
-    }
-  }
+    // scan/review
+    setDocs(docs: ScanDoc[]) { this.docs = structuredClone(docs) },
+    updateDoc(id: string, patch: Partial<ScanDoc>) {
+      const i = this.docs.findIndex(d => d.id === id)
+      if (i >= 0) this.docs[i] = { ...this.docs[i], ...patch }
+    },
 
-  function reset() {
-    step.value = 0
-    profileId.value = null
-    rubric.value = null
-    answers.value = null
-    results.value = null
-    setPdf(null)
-  }
+    // extract
+    setExtract(r: ExtractResult) { this.extract = structuredClone(r) },
 
-  return {
-    step,
-    profileId,
-    rubric,
-    answers,
-    results,
-    pdfFile,
-    selectedPageIndices,
-    canRun,
-    setProfile,
-    setRubric,
-    setAnswers,
-    setResults,
-    setPdf,
-    setSelectedPages,
-    next,
-    previous,
-    goTo,
-    go,
-    reset,
-    totalSteps: WIZARD_TOTAL_STEPS
+    // rubric
+    setRubric(r: ExamRubric) { this.rubric = structuredClone(r) },
+    replaceRubric(r: ExamRubric) { this.rubric = structuredClone(r) },
+
+    // profile & answers
+    setProfile(id?: string | null) { this.profileId = id ?? null },
+    setAnswers(v: unknown) { this.answers = structuredClone(v) },
+
+    // pdf workflow helpers (legacy components)
+    setPdf(file?: File | null) { this.pdfFile = file ?? null },
+    setSelectedPages(indices: number[]) { this.selectedPageIndices = [...indices] },
+
+    // grade
+    setResults(r: GradeResult) { this.results = structuredClone(r) },
+
+    reset() { this.$reset() }
   }
 })
 
-export const useWizard = useWizardStore
+// Back-compat and utilities
+export { useWizard as useWizardStore }
+export const WIZARD_TOTAL_STEPS = STEP_ORDER.length
