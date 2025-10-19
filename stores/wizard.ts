@@ -1,4 +1,7 @@
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
+import { AnswersSchema, ResultsSchema, RubricSchema } from '~/lib/schemas'
+import type { Answers, Results, Rubric } from '~/lib/schemas'
 
 export type Step =
   | 'profile'
@@ -6,47 +9,39 @@ export type Step =
   | 'rubric-upload' | 'rubric-edit' | 'answers-upload'
   | 'grade' | 'results' | 'export'
 
-export interface ScanDoc {
-  id: string
-  name: string
-  blobUrl: string
-  rotations: number
-  crop?: { x: number; y: number; w: number; h: number }
-}
-export interface ExtractResult {
-  submissions: Record<string, Record<string, string>>
-  coverage: number
-  notes?: string[]
-}
-export interface RubricQuestionCriterion { criterion: string; max_points: number }
-export interface RubricQuestion {
-  question_id: string; question_text: string; max_points: number
-  criteria?: RubricQuestionCriterion[]
-}
-export interface ExamRubric {
-  exam_name?: string; rubric_name?: string
-  questions: RubricQuestion[]
-}
-export interface GradeResult {
-  total_score: number; max_score: number
-  question_grades: Array<{ question_id: string; score: number; max_points: number }>
-  per_student?: Record<string, { score: number; max: number }>
+const stepOrder = ['profile', 'rubric-upload', 'rubric-edit', 'answers-upload', 'grade', 'results'] as const
+
+export type WizardStep = typeof stepOrder[number]
+export type StepAlias = WizardStep | 'scan' | 'review' | 'extract' | 'export'
+
+const stepAliases: Record<StepAlias, WizardStep> = {
+  profile: 'profile',
+  'rubric-upload': 'rubric-upload',
+  'rubric-edit': 'rubric-edit',
+  'answers-upload': 'answers-upload',
+  grade: 'grade',
+  results: 'results',
+  scan: 'profile',
+  review: 'profile',
+  extract: 'answers-upload',
+  export: 'results'
 }
 
-interface WizardState {
-  // --- Flow control ---
-  step: Step
+export const useWizardStore = defineStore('wizard', () => {
+  const step = ref(0)
+  const profileId = ref<string | null>(null)
+  const rubric = ref<Rubric | null>(null)
+  const answers = ref<Answers | null>(null)
+  const results = ref<Results | null>(null)
 
-  // --- Scan / Review ---
-  docs: ScanDoc[]                  // optional thumbnails or per-page data
-  pdfFile?: File | null            // uploaded PDF file
-  selectedPageIndices?: number[]   // zero-based indices of chosen pages
+  const pdfFile = ref<File | null>(null)
+  const selectedPageIndices = ref<number[]>([])
 
-  // --- Extract (OCR results) ---
-  extract?: ExtractResult
+  const canRun = computed(() => Boolean(profileId.value && rubric.value && answers.value))
 
-  // --- Rubric (grading schema) ---
-  rubric: ExamRubric | null
+  function setProfile(id: string | null) {
+    profileId.value = id
+  }
 
   // --- Profile & Answers (newer flow) ---
   profileId?: string | null
@@ -55,11 +50,30 @@ interface WizardState {
   // --- Grade (results) ---
   results?: GradeResult
 
-  // --- Meta ---
-  busy: boolean
-  error?: string
-}
+  function setAnswers(payload: unknown) {
+    answers.value = payload ? AnswersSchema.parse(payload) : null
+  }
 
+  function setResults(payload: unknown) {
+    results.value = payload ? ResultsSchema.parse(payload) : null
+  }
+
+  function setPdf(file: File | null) {
+    pdfFile.value = file
+    if (!file) {
+      selectedPageIndices.value = []
+    }
+  }
+
+  function setSelectedPages(pages: number[]) {
+    selectedPageIndices.value = Array.from(new Set(pages)).sort((a, b) => a - b)
+  }
+
+  function next() {
+    if (step.value < WIZARD_TOTAL_STEPS - 1) {
+      step.value += 1
+    }
+  }
 
 const STEP_ORDER: Step[] = [
   'profile',
