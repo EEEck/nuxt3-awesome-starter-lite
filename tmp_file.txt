@@ -14,21 +14,21 @@ const wizard = useWizardStore()
 const rubricEdit = useRubricEditStore()
 
 const componentsMap: Record<string, any> = {
-  profile: StepProfile,
+  'profile': StepProfile,
   'rubric-upload': StepRubricUpload,
   'rubric-edit': StepRubricEdit,
   'answers-upload': StepAnswersUpload,
-  grade: StepGradingRun,
-  results: StepResults,
+  'grade': StepGradingRun,
+  'results': StepResults,
 }
 
 const labels: Record<string, string> = {
-  profile: 'Profile',
+  'profile': 'Profile',
   'rubric-upload': 'Rubric Upload',
   'rubric-edit': 'Rubric Review',
   'answers-upload': 'Answers Upload',
-  grade: 'Run Grading',
-  results: 'Results',
+  'grade': 'Run Grading',
+  'results': 'Results',
 }
 
 const safeIndex = computed(() => {
@@ -39,11 +39,14 @@ const safeIndex = computed(() => {
 const currentComponent = computed(() => componentsMap[wizard.step] ?? StepProfile)
 const stepName = computed(() => labels[wizard.step] ?? 'Wizard')
 const progress = computed(() => Math.round(((safeIndex.value + 1) / WIZARD_TOTAL_STEPS) * 100))
+</script>
 
-function handleStartOver() {
-  wizard.startOver()
-  rubricEdit.clearAll()
-}
+<template>
+  <div class="space-y-8 pb-16">
+    const handleStartOver = () => {
+      wizard.startOver()
+      rubricEdit.clearAll()
+    }
 </script>
 
 <template>
@@ -97,3 +100,4 @@ function handleStartOver() {
     </section>
   </div>
 </template>
+
