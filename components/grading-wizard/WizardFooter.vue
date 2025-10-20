@@ -8,7 +8,12 @@ const rubricEdit = useRubricEditStore()
 
 const hasPrev = computed(() => wizard.stepIndex > 0)
 const hasNext = computed(() => wizard.stepIndex < WIZARD_TOTAL_STEPS - 1)
-const canNext = computed(() => wizard.canNext)
+const canNext = computed(() => {
+  if (wizard.step === 'rubric-edit') {
+    return wizard.canNext && !rubricEdit.hasValidationIssues
+  }
+  return wizard.canNext
+})
 
 function prev() { if (hasPrev.value) wizard.prev() }
 function next() { if (hasNext.value && canNext.value) wizard.next() }

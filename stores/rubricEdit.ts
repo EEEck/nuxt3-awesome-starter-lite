@@ -48,6 +48,23 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   const questions = computed(() => present.value?.questions ?? [])
   const totalPoints = computed(() => questions.value.reduce((s,q)=>s+(q.max_points||0),0))
 
+  // Validation: mirror legacy guardrails (non-negative, sum match, non-empty ids/text)
+  const validationIssues = computed(() => {
+    const issues: { index: number; message: string; code: string }[] = []
+    const r = present.value
+    if (!r) return issues
+    r.questions.forEach((q, idx) => {
+      const qMax = Number(q.max_points) || 0
+      const sum = (q.criteria || []).reduce((s, c) => s + (Number(c.max_points) || 0), 0)
+      if (qMax < 0) issues.push({ index: idx, code: 'negative-max', message: `Question ${idx + 1}: Max points cannot be negative` })
+      if (sum > 0 && qMax !== sum) issues.push({ index: idx, code: 'mismatch', message: `Question ${idx + 1}: Total points (${qMax}) doesn't match sum of criteria (${sum})` })
+      if (!String(q.question_id || '').trim()) issues.push({ index: idx, code: 'empty-id', message: `Question ${idx + 1}: Question ID cannot be empty` })
+      if (!String(q.question_text || '').trim()) issues.push({ index: idx, code: 'empty-text', message: `Question ${idx + 1}: Question text cannot be empty` })
+    })
+    return issues
+  })
+  const hasValidationIssues = computed(() => validationIssues.value.length > 0)
+
   function commit(next: ExamRubric) {
     if (!present.value) { present.value = deepClone(next); return }
     past.value.push(deepClone(present.value))
@@ -121,6 +138,9 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     if (!present.value) return
     const next = deepClone(present.value)
     next.questions[i].criteria.push({ criterion: '', max_points: 1 })
+    // Auto-sync question max points to sum of criteria
+    const sum = next.questions[i].criteria.reduce((s, c) => s + (Number(c.max_points) || 0), 0)
+    next.questions[i].max_points = sum
     commit(next)
   }
   function removeCriterion(i: number, j: number) {
@@ -128,6 +148,9 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     const next = deepClone(present.value)
     if (next.questions[i].criteria.length <= 1) return
     next.questions[i].criteria.splice(j,1)
+    // Auto-sync question max points to sum of criteria
+    const sum = next.questions[i].criteria.reduce((s, c) => s + (Number(c.max_points) || 0), 0)
+    next.questions[i].max_points = sum
     commit(next)
   }
   function setCriterion(i: number, j: number, field: keyof Criterion, v: any) {
@@ -135,6 +158,9 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     const next = deepClone(present.value)
     // @ts-ignore
     next.questions[i].criteria[j][field] = field === 'max_points' ? Number(v) : String(v)
+    // Auto-sync question max points to sum of criteria whenever a sub-criterion changes
+    const sum = next.questions[i].criteria.reduce((s, c) => s + (Number(c.max_points) || 0), 0)
+    next.questions[i].max_points = sum
     commit(next)
   }
 
@@ -220,7 +246,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     // state
     present, past, future, detection,
     // computed
-    canUndo, canRedo, questions, totalPoints,
+    canUndo, canRedo, questions, totalPoints, validationIssues, hasValidationIssues,
     // actions
     initFromWizard, commit, undo, redo,
     setExamName, setGeneralInstructions, setTotalQuestions,
