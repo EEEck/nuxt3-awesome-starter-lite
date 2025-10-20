@@ -27,54 +27,6 @@ const stepAliases: Record<StepAlias, WizardStep> = {
   export: 'results'
 }
 
-export const useWizardStore = defineStore('wizard', () => {
-  const step = ref(0)
-  const profileId = ref<string | null>(null)
-  const rubric = ref<Rubric | null>(null)
-  const answers = ref<Answers | null>(null)
-  const results = ref<Results | null>(null)
-
-  const pdfFile = ref<File | null>(null)
-  const selectedPageIndices = ref<number[]>([])
-
-  const canRun = computed(() => Boolean(profileId.value && rubric.value && answers.value))
-
-  function setProfile(id: string | null) {
-    profileId.value = id
-  }
-
-  // --- Profile & Answers (newer flow) ---
-  profileId?: string | null
-  answers?: unknown | null
-
-  // --- Grade (results) ---
-  results?: GradeResult
-
-  function setAnswers(payload: unknown) {
-    answers.value = payload ? AnswersSchema.parse(payload) : null
-  }
-
-  function setResults(payload: unknown) {
-    results.value = payload ? ResultsSchema.parse(payload) : null
-  }
-
-  function setPdf(file: File | null) {
-    pdfFile.value = file
-    if (!file) {
-      selectedPageIndices.value = []
-    }
-  }
-
-  function setSelectedPages(pages: number[]) {
-    selectedPageIndices.value = Array.from(new Set(pages)).sort((a, b) => a - b)
-  }
-
-  function next() {
-    if (step.value < WIZARD_TOTAL_STEPS - 1) {
-      step.value += 1
-    }
-  }
-
 const STEP_ORDER: Step[] = [
   'profile',
   'rubric-upload',
@@ -85,16 +37,35 @@ const STEP_ORDER: Step[] = [
 ]
 
 export const useWizard = defineStore('wizard', {
-  state: (): WizardState => ({
-    step: 'profile', // default entry step for the grading wizard
-    docs: [],
-    rubric: null,
-    profileId: null,
-    answers: null,
-    busy: false
+  state: () => ({
+    step: 'rubric-upload' as Step, // land on Upload first, order keeps Profile -> Upload for Next flow
+    docs: [] as any[],
+    rubric: null as any,
+    profileId: null as string | null,
+    answers: null as any,
+    busy: false as boolean,
+    error: undefined as string | undefined,
+    pdfFile: null as File | null,
+    selectedPageIndices: [] as number[],
+    extract: undefined as any,
+    results: null as any,
   }),
+  persist: {
+    paths: ['step', 'profileId', 'rubric', 'answers']
+  },
   getters: {
     canRun: (state) => !!(state.profileId && state.rubric && state.answers),
+    stepIndex: (state) => STEP_ORDER.indexOf(state.step as Step),
+    canNext: (state) => {
+      switch (state.step) {
+        case 'rubric-upload':
+          return !!state.rubric
+        case 'answers-upload':
+          return !!state.answers
+        default:
+          return true
+      }
+    },
   },
   actions: {
     go(step: Step) { this.step = step },
@@ -135,10 +106,61 @@ export const useWizard = defineStore('wizard', {
     // grade
     setResults(r: GradeResult) { this.results = structuredClone(r) },
 
-    reset() { this.$reset() }
+    reset() { this.$reset() },
+
+    startOver() {
+      // Full wizard restart: clear volatile state and go to first step
+      this.rubric = null as any
+      this.answers = null as any
+      this.results = null as any
+      this.pdfFile = null
+      this.selectedPageIndices = []
+      // Optional: keep profileId or clear; clearing for a true fresh start
+      this.profileId = null
+      this.step = STEP_ORDER[0]
+    }
+
+    // Lightweight session persistence for wizard JSON (local-only)
+    ,saveSession(payload: { data: any; title?: string }) {
+      const key = 'wizard:sessions'
+      const now = new Date().toISOString()
+      const id = (globalThis.crypto?.randomUUID?.() ?? `wiz-${Date.now()}`)
+      const entry = {
+        id,
+        updated_at: now,
+        title: payload.title || 'Untitled',
+        profileId: this.profileId,
+        hasRubric: !!this.rubric,
+        hasAnswers: !!this.answers,
+        data: payload.data
+      }
+      const raw = localStorage.getItem(key)
+      const list = raw ? (JSON.parse(raw) as any[]) : []
+      list.unshift(entry)
+      localStorage.setItem(key, JSON.stringify(list))
+      return id
+    }
+    ,listSessions() {
+      const key = 'wizard:sessions'
+      const raw = localStorage.getItem(key)
+      const list = raw ? (JSON.parse(raw) as any[]) : []
+      return list.map(({ data, ...meta }) => meta)
+    }
+    ,loadSession(id: string) {
+      const key = 'wizard:sessions'
+      const raw = localStorage.getItem(key)
+      const list = raw ? (JSON.parse(raw) as any[]) : []
+      const entry = list.find((e: any) => e.id === id)
+      if (!entry) return false
+      // Minimal restore; expand as needed
+      this.profileId = entry.profileId ?? null
+      // Caller decides how to apply entry.data (rubric or answers)
+      return entry
+    }
   }
 })
 
 // Back-compat and utilities
 export { useWizard as useWizardStore }
 export const WIZARD_TOTAL_STEPS = STEP_ORDER.length
+export const WIZARD_STEPS = STEP_ORDER

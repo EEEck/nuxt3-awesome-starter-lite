@@ -13,8 +13,19 @@ watch(localProfile, (value) => {
 })
 
 const hasProfiles = computed(() => profiles.profiles.length > 0)
+const selected = computed(() => (localProfile.value ? profiles.byId(localProfile.value) : null))
+const questionTypesCount = computed(() => selected.value?.questionTypes?.length ?? 0)
 
-const goNext = () => {
+function onSelectChange(e: Event) {
+  const val = (e.target as HTMLSelectElement).value
+  localProfile.value = val || null
+}
+
+function createProfile() {
+  window.location.href = '/ai-assistant'
+}
+
+function goNext() {
   wizard.next()
 }
 </script>
@@ -22,62 +33,65 @@ const goNext = () => {
 <template>
   <section class="space-y-6">
     <header class="space-y-1">
-      <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">Step 1</p>
       <h2 class="text-2xl font-semibold">Select Teacher Profile</h2>
-      <p class="text-slate-600 dark:text-slate-300">
-        Choose your teaching profile to customize AI grading behavior.
-      </p>
+      <p class="text-slate-400">Choose your teaching profile to customize AI grading behavior</p>
     </header>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Profile ID</label>
-        <input
-          v-model="localProfile"
-          type="text"
-          placeholder="eg. spring-2025-bio101"
-          class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-400 dark:focus:ring-slate-700"
-        />
+
+    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <div class="mb-4 flex items-center gap-2 text-white">
+        <Icon name="lucide:user-check" class="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Grading Profile</h3>
       </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Or pick an existing profile</label>
-        <div class="rounded border border-slate-300 p-2 dark:border-slate-700">
-          <div v-if="!hasProfiles" class="text-sm text-slate-500 dark:text-slate-400">No saved profiles yet.</div>
-          <ul v-else class="max-h-44 space-y-1 overflow-y-auto">
-            <li v-for="p in profiles.profiles" :key="p.id" class="flex items-center justify-between gap-2 rounded px-2 py-1 hover:bg-slate-50 dark:hover:bg-slate-800">
-              <div>
-                <p class="text-sm font-medium">{{ p.name }}</p>
-                <p class="text-xs text-slate-500">{{ p.id }}</p>
-              </div>
-              <button type="button" class="text-xs text-brand-600 hover:underline" @click="localProfile = p.id">Select</button>
-            </li>
-          </ul>
+
+      <div class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+        <Icon name="lucide:info" class="mr-1 inline h-4 w-4" />
+        Select a profile to enable smart question type detection and personalized grading
+      </div>
+
+      <div class="flex items-end gap-4">
+        <div class="flex-1">
+          <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Select Profile (Optional)</label>
+          <select
+            id="profileSelect"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+            :value="localProfile || ''"
+            @change="onSelectChange"
+          >
+            <option value="">No profile selected - use default grading</option>
+            <option v-for="p in profiles.profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
         </div>
-        <NuxtLink
-          to="/ai-assistant"
-          class="inline-flex items-center justify-center rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
-        >
-          Create profile in AI Assistant
-        </NuxtLink>
+        <button class="btn btn-primary rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-500" id="createProfileBtn" @click="createProfile">
+          <Icon name="lucide:plus" class="mr-1 inline h-4 w-4" /> Create Profile
+        </button>
+      </div>
+
+      <div v-if="selected" id="selectedProfileInfo" class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h4 id="profileInfoName" class="mb-1 font-medium text-slate-900 dark:text-white">{{ selected!.name }}</h4>
+            <p id="profileInfoDetails" class="mb-2 text-sm text-slate-600 dark:text-slate-400">
+              {{ [selected!.subjectArea, selected!.gradeLevel, selected!.schoolType].filter(Boolean).join(' • ') || 'General' }}
+            </p>
+            <p id="profileInfoInstructions" class="text-xs text-slate-500 dark:text-slate-400">{{ selected!.generalInstructions || 'No special instructions' }}</p>
+          </div>
+          <div class="text-right">
+            <div class="mb-1 text-xs text-slate-500 dark:text-slate-400">Question Types</div>
+            <div id="profileInfoTypes" class="text-sm font-medium text-slate-700 dark:text-blue-300">{{ questionTypesCount }}</div>
+          </div>
+        </div>
       </div>
     </div>
-    <button
-      type="button"
-      class="rounded bg-slate-900 px-4 py-2 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-      :disabled="!wizard.profileId"
-      @click="goNext"
-    >
-      Next
-    </button>
 
-    <div class="mt-6">
-      <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/30 dark:bg-blue-900/20">
-        <h4 class="text-blue-800 font-medium dark:text-blue-300 mb-1">
-          Next: Rubric Setup
-        </h4>
-        <p class="text-sm text-blue-700 dark:text-blue-200">
-          Upload or create your exam rubric with scoring criteria.
-        </p>
-      </div>
+    <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/30 dark:bg-blue-900/20">
+      <h4 class="mb-1 font-medium text-blue-700 dark:text-blue-300"><Icon name="lucide:arrow-right" class="mr-1 inline h-4 w-4" /> Next: Rubric Setup</h4>
+      <p class="text-sm text-blue-700/80 dark:text-blue-200">Upload or create your exam rubric with scoring criteria</p>
+    </div>
+
+    <div class="pt-2">
+      <button type="button" class="rounded bg-brand-600 px-4 py-2 font-semibold text-white hover:bg-brand-500 disabled:cursor-not-allowed disabled:bg-slate-400" :disabled="false" @click="goNext">
+        Next
+      </button>
     </div>
   </section>
 </template>
