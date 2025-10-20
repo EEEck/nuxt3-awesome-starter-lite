@@ -30,6 +30,8 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   const present = ref<ExamRubric | null>(null)
   const future = ref<ExamRubric[]>([])
   const detection = ref<Record<number, DetectionHint | null>>({})
+  const aiFeedback = ref<string | null>(null)
+  const aiFeedbackLoading = ref(false)
 
   function initFromWizard() {
     if (wizard.rubric) {
@@ -225,6 +227,33 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     }
   }
 
+  // AI rubric feedback (placeholder until backend connected)
+  async function requestFeedback(clarification: string) {
+    if (!present.value) return
+    aiFeedbackLoading.value = true
+    try {
+      // Try backend if available
+      const res = await fetch('/api/rubric-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exam_rubric: present.value, clarification })
+      })
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}))
+        aiFeedback.value = (data?.feedback || data?.text || JSON.stringify(data)) ?? null
+      } else {
+        // Graceful fallback placeholder
+        aiFeedback.value = `AI feedback (preview). Clarification: ${clarification || '—'}\n\n• Criteria appear balanced for current max points.\n• Consider clarifying examples in question texts.\n• Ensure partial credit notes align with question types.`
+      }
+    } catch {
+      aiFeedback.value = `AI feedback (offline preview).\n\n• Criteria appear balanced.\n• Consider adding guidance on expected keywords.`
+    } finally {
+      aiFeedbackLoading.value = false
+    }
+  }
+
+  function dismissFeedback() { aiFeedback.value = null }
+
   function download() {
     if (!present.value) return
     const blob = new Blob([JSON.stringify(present.value, null, 2)], { type: 'application/json' })
@@ -244,7 +273,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
 
   return {
     // state
-    present, past, future, detection,
+    present, past, future, detection, aiFeedback, aiFeedbackLoading,
     // computed
     canUndo, canRedo, questions, totalPoints, validationIssues, hasValidationIssues,
     // actions
@@ -253,7 +282,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     setQuestionField, addQuestion, removeQuestion,
     addCriterion, removeCriterion, setCriterion,
     setQuestions, setCriteria, redistributeCriteriaEvenly,
-    detectQuestionTypes, download, clearAll,
+    detectQuestionTypes, requestFeedback, dismissFeedback, download, clearAll,
   }
 }, {
   persist: {

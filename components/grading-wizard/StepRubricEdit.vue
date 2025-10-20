@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, watch, ref } from 'vue'
 import { useWizard } from '~/stores/wizard'
 import { useProfilesStore } from '~/stores/profiles'
 import { useRubricEditStore } from '~/stores/rubricEdit'
@@ -47,6 +47,28 @@ watch(keys['Ctrl+Z'], (v) => { if (v) edit.undo() })
 watch(keys['Ctrl+Shift+Z'], (v) => { if (v) edit.redo() })
 
 function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: any)=> s + (Number(c.max_points)||0), 0) }
+
+// Feedback input
+const clarification = ref('')
+async function getFeedback() {
+  await edit.requestFeedback(clarification.value)
+}
+
+// Probabilities preview: mock top-3 types per question (uses detection if present)
+function probabilityPreview(i: number) {
+  const types = questionTypes.value
+  const hint = edit.detection[i]
+  if (!types.length) return [] as { label: string; value: number }[]
+  // default distribution
+  let dist = [0.6, 0.25, 0.15]
+  if (hint && hint.confidence) {
+    const top = Math.max(0.4, Math.min(0.95, Number(hint.confidence)))
+    const rem = 1 - top
+    dist = [top, rem * 0.6, rem * 0.4]
+  }
+  const labels = [types[0]?.name || 'Type A', types[1]?.name || 'Type B', types[2]?.name || 'Type C']
+  return labels.map((label, idx) => ({ label, value: dist[idx] ?? 0 }))
+}
 </script>
 
 <template>
@@ -71,9 +93,8 @@ function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: an
           </div>
         </div>
       </div>
-      <!-- Toolbar / Current Rubric header -->
-      <div class="sticky top-20 z-20 flex items-center justify-between rounded-2xl border border-slate-200 bg-white/80 p-3 backdrop-blur">
-        <h3 class="text-lg font-semibold text-slate-900">Current Rubric</h3>
+      <!-- Sticky tools bar (no title) -->
+      <div class="sticky top-20 z-20 flex items-center justify-end rounded-2xl border border-slate-200 bg-white/80 p-3 backdrop-blur">
         <div class="flex items-center gap-2">
           <button class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100" @click="edit.addQuestion">
             <Icon name="lucide:plus" class="h-4 w-4 text-blue-700" /> Add Question
@@ -90,12 +111,50 @@ function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: an
         </div>
       </div>
 
+      <!-- AI Feedback (moved above Exam Information) -->
+      <div class="rounded-2xl border outline-variant-border bg-gradient-to-b from-white to-surface-variant p-0">
+        <div class="h-1.5 rounded-t-2xl accent-neutral" />
+        <div class="p-5 pb-3">
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:cpu" class="h-6 w-6 text-slate-700" />
+            <h3 class="text-lg font-semibold text-slate-900">AI Feedback</h3>
+          </div>
+          <p class="text-sm text-slate-600">Refine rubric clarity, coverage, and fairness. Provide brief guidance and get targeted suggestions.</p>
+        </div>
+        <div class="divider mx-5" />
+        <div class="p-5 pt-4">
+          <div class="flex items-stretch gap-2">
+            <textarea v-model="clarification" rows="4" placeholder="Tell AI what to focus on (e.g., ‘Make it more focused on critical thinking; add examples; simplify language.’)" class="w-[48rem] max-w-full rounded-lg border outline-variant-border bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none" />
+            <button class="flex w-36 items-center justify-center gap-2 rounded-lg border outline-variant-border bg-slate-50 px-3 text-sm text-slate-700 hover:bg-slate-100" :disabled="edit.aiFeedbackLoading" @click="getFeedback">
+              <Icon name="lucide:message-square-text" class="h-5 w-5 text-slate-700" />
+              {{ edit.aiFeedbackLoading ? 'Getting…' : 'Get Feedback' }}
+            </button>
+          </div>
+          <div v-if="clarification || edit.aiFeedback" class="mt-3 space-y-3">
+            <div v-if="clarification" class="rounded-xl border outline-variant-border bg-white p-3">
+              <div class="mb-1 text-xs font-semibold text-slate-500">You</div>
+              <p class="text-sm text-slate-900 whitespace-pre-wrap">{{ clarification }}</p>
+            </div>
+            <div v-if="edit.aiFeedback" class="rounded-xl border outline-variant-border bg-white p-3">
+              <div class="mb-1 flex items-center gap-2 text-xs font-semibold text-slate-500">
+                <Icon name="lucide:cpu" class="h-4 w-4 text-slate-600" /> AI
+              </div>
+              <p class="text-sm text-slate-900 whitespace-pre-wrap">{{ edit.aiFeedback }}</p>
+              <div class="mt-2 flex justify-end">
+                <button class="rounded-lg border outline-variant-border bg-white px-3 py-1.5 text-xs hover:bg-slate-50" @click="edit.dismissFeedback">Dismiss</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Exam information -->
       <div class="rounded-2xl border outline-variant-border bg-gradient-to-b from-surface-variant to-white p-0 shadow-sm">
         <!-- Accent bar + title -->
-        <div class="h-1.5 rounded-t-2xl primary-bg" />
-        <div class="flex items-center justify-between p-5 pb-3">
+        <div class="h-1.5 rounded-t-2xl accent-neutral" />
+        <div class="p-5 pb-3">
           <h3 class="text-lg font-semibold text-slate-900">Exam Information</h3>
+          <p class="text-sm text-slate-600">Name this exam and set totals and general instructions.</p>
         </div>
         <div class="divider mx-5" />
         <div class="grid gap-4 md:grid-cols-3 p-5 pt-4">
@@ -124,13 +183,80 @@ function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: an
         </div>
 
         <div class="flex items-center justify-end gap-2 px-5 pb-5">
-          <button class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100" @click="detectTypes">
-            <Icon name="lucide:scan-line" class="h-4 w-4 text-blue-700" /> Detect question types
+          <button class="inline-flex items-center gap-2 rounded-lg border outline-variant-border bg-slate-50 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100" @click="detectTypes">
+            <Icon name="lucide:scan-line" class="h-4 w-4 text-slate-700" /> Detect question types
           </button>
         </div>
       </div>
 
-      <!-- Questions -->
+      <!-- AI Feedback Panel (legacy position, disabled) -->
+      <div v-if="false" class="rounded-2xl border outline-variant-border bg-gradient-to-b from-white to-surface-variant p-0">
+        <div class="h-1.5 rounded-t-2xl primary-bg" />
+        <div class="p-5">
+        <div class="mb-3 flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:cpu" class="h-5 w-5 text-slate-700" />
+            <h4 class="text-base font-semibold text-slate-900">Get AI Feedback on Rubric</h4>
+          </div>
+          <div class="flex items-center gap-2">
+            <textarea v-model="clarification" rows="4" placeholder="Tell AI what to focus on (e.g., ‘Make it more focused on critical thinking; add examples; simplify language.’)" class="w-[48rem] max-w-full rounded-lg border outline-variant-border bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none" />
+            <button class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100" :disabled="edit.aiFeedbackLoading" @click="getFeedback">
+              <Icon name="lucide:sparkles" class="h-4 w-4 text-blue-700" />
+              {{ edit.aiFeedbackLoading ? 'Getting…' : 'Get Feedback' }}
+            </button>
+          </div>
+        </div>
+        <!-- Mini chat-like thread: last user prompt + AI reply -->
+        <div v-if="clarification || edit.aiFeedback" class="space-y-3">
+          <div v-if="clarification" class="rounded-xl border outline-variant-border bg-white p-3">
+            <div class="mb-1 text-xs font-semibold text-slate-500">You</div>
+            <p class="text-sm text-slate-900 whitespace-pre-wrap">{{ clarification }}</p>
+          </div>
+          <div v-if="edit.aiFeedback" class="rounded-xl border outline-variant-border bg-white p-3">
+            <div class="mb-1 flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <Icon name="lucide:sparkles" class="h-4 w-4 text-slate-700" /> AI
+            </div>
+            <p class="text-sm text-slate-900 whitespace-pre-wrap">{{ edit.aiFeedback }}</p>
+            <div class="mt-2 flex justify-end">
+              <button class="rounded-lg border outline-variant-border bg-white px-3 py-1.5 text-xs hover:bg-slate-50" @click="edit.dismissFeedback">Dismiss</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- AI Question Type Suggestions (summary) -->
+      <div class="rounded-2xl border outline-variant-border bg-white p-5">
+        <div class="mb-3 flex items-center gap-2 text-slate-800">
+          <Icon name="lucide:zap" class="h-5 w-5 text-slate-700" />
+          <h4 class="text-sm font-semibold">AI Question Type Suggestions</h4>
+        </div>
+        <div class="space-y-2">
+          <div v-for="(hint, idx) in Object.values(edit.detection)" :key="idx" v-if="hint" class="rounded-lg border outline-variant-border bg-surface-variant p-3 flex items-center gap-2">
+            <div class="text-sm text-slate-800">Q{{ idx + 1 }}: {{ hint.name }}</div>
+            <div class="text-xs text-slate-600">{{ Math.round((hint.confidence ?? 0) * 100) }}% match</div>
+          </div>
+        </div>
+        <!-- Probability preview -->
+        <div class="mt-3 space-y-2">
+          <div v-for="(q, i) in edit.questions" :key="'prob-'+i" class="rounded-lg border outline-variant-border bg-white p-3">
+            <div class="mb-1 text-xs font-semibold text-slate-600">Q{{ i+1 }} Type Confidence (preview)</div>
+            <div class="space-y-1">
+              <div v-for="b in probabilityPreview(i)" :key="b.label" class="flex items-center gap-2">
+                <div class="w-28 text-xs text-slate-600">{{ b.label }}</div>
+                <div class="h-2 flex-1 rounded bg-slate-200">
+                  <div class="h-2 rounded primary-bg" :style="{ width: Math.round(b.value*100) + '%' }"></div>
+                </div>
+                <div class="w-10 text-right text-xs text-slate-600">{{ Math.round(b.value*100) }}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mt-2 text-xs text-slate-500">Preview only — final values will populate from the AI backend.</p>
+      </div>
+
+      <div class="mt-2"><h3 class="text-lg font-semibold text-slate-900">Questions</h3><p class="text-sm text-slate-600">Edit question text, types, and criteria. Reorder or tweak points as needed.</p></div>
+<!-- Questions -->
       <div class="space-y-5">
         <Draggable :model-value="edit.questions" item-key="question_id" handle=".drag-handle" @update:modelValue="edit.setQuestions($event)">
           <template #item="{ element: q, index: i }">
@@ -143,7 +269,7 @@ function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: an
               <!-- Accent bar -->
               <div class="h-1.5 rounded-t-2xl" :class="(edit.detection[i]?.confidence ?? 0) >= 0.7 ? 'bg-emerald-300' : (edit.detection[i]?.confidence ?? 0) > 0 ? 'bg-amber-300' : 'primary-bg'" />
               <div class="p-5">
-              <div class="mb-3 flex items-center justify-between">
+              <div class="mb-3 flex items-center gap-2">
                 <div class="flex items-center gap-2">
                   <span class="mr-1 cursor-grab select-none drag-handle text-slate-400">⋮⋮</span>
                   <h4 class="font-medium text-slate-900">Question {{ i + 1 }}</h4>
@@ -199,7 +325,7 @@ function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: an
               </label>
 
               <div class="mt-4">
-                <div class="mb-2 flex items-center justify-between">
+                <div class="mb-2 flex items-center gap-2">
                   <h5 class="text-sm font-semibold text-slate-900">Criteria</h5>
                   <div class="flex items-center gap-3 text-xs text-slate-600">
                     <span :class="criteriaSum(q) !== q.max_points ? 'text-amber-700' : ''">Sum: {{ criteriaSum(q) }} / {{ q.max_points }} pts</span>
@@ -248,3 +374,10 @@ function criteriaSum(q: any) { return (q.criteria || []).reduce((s: number,c: an
     </div>
   </section>
 </template>
+
+
+
+
+
+
+

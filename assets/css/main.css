@@ -37,4 +37,6 @@
   .elev-1 { box-shadow: var(--elev-1); }
   .primary-bg { background-color: var(--primary); }
   .primary-text { color: var(--primary); }
+  .accent-neutral { background-color: var(--outline-variant); }
+  .accent-quiet { background-color: var(--outline); }
 }
