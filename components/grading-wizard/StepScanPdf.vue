@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useWizard } from '~/stores/wizard'
 import LegacyPdfPicker from './LegacyPdfPicker.vue'
+import DocumentViewer from '~/components/ui/DocumentViewer.vue'
 
 const wiz = useWizard()
 const err = ref<string | null>(null)
@@ -27,7 +28,11 @@ function proceed() {
     <input type="file" accept="application/pdf" @change="onPick" />
     <p v-if="err" class="text-sm text-red-600">{{ err }}</p>
 
-    <LegacyPdfPicker v-if="wiz.pdfFile" />
+  <LegacyPdfPicker v-if="wiz.pdfFile" />
+
+    <div v-if="wiz.pdfFile" class="rounded-2xl border outline-variant-border bg-white p-4">
+      <DocumentViewer :pdf-url="URL.createObjectURL(wiz.pdfFile)" />
+    </div>
 
     <div class="mt-3 flex items-center justify-between">
       <div class="text-sm text-gray-600">
