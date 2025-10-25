@@ -6,6 +6,7 @@ import { useRubricEditStore } from '~/stores/rubricEdit'
 import Draggable from 'vuedraggable'
 import { useMagicKeys } from '@vueuse/core'
 import { toast } from 'vue-sonner'
+import { RubricQuestionCard } from '~/components/cards'
 
 const wiz = useWizard()
 const profiles = useProfilesStore()
@@ -187,10 +188,10 @@ function probabilityPreview(i: number) {
             <Icon name="lucide:scan-line" class="h-4 w-4 text-slate-700" /> Detect question types
           </button>
         </div>
-      </div>
+  </div>
 
-      <!-- AI Feedback Panel (legacy position, disabled) -->
-      <div v-if="false" class="rounded-2xl border outline-variant-border bg-gradient-to-b from-white to-surface-variant p-0">
+  <!-- AI Feedback Panel (legacy position, disabled) -->
+  <div v-if="false" class="rounded-2xl border outline-variant-border bg-gradient-to-b from-white to-surface-variant p-0">
         <div class="h-1.5 rounded-t-2xl primary-bg" />
         <div class="p-5">
         <div class="mb-3 flex items-center gap-2">
@@ -260,104 +261,20 @@ function probabilityPreview(i: number) {
       <div class="space-y-5">
         <Draggable :model-value="edit.questions" item-key="question_id" handle=".drag-handle" @update:modelValue="edit.setQuestions($event)">
           <template #item="{ element: q, index: i }">
-            <div
-             class="rounded-2xl border outline-variant-border bg-gradient-to-b from-white to-surface-variant p-0 shadow-sm hover:shadow-md hover:border-slate-300 transition"
-             :class="{
-               'ring-1 ring-amber-300': (edit.detection[i]?.confidence ?? 0) > 0 && (edit.detection[i]?.confidence ?? 0) < 0.7,
-               'ring-1 ring-emerald-300': (edit.detection[i]?.confidence ?? 0) >= 0.7
-             }">
-              <!-- Accent bar -->
-              <div class="h-1.5 rounded-t-2xl" :class="(edit.detection[i]?.confidence ?? 0) >= 0.7 ? 'bg-emerald-300' : (edit.detection[i]?.confidence ?? 0) > 0 ? 'bg-amber-300' : 'primary-bg'" />
-              <div class="p-5">
-              <div class="mb-3 flex items-center gap-2">
-                <div class="flex items-center gap-2">
-                  <span class="mr-1 cursor-grab select-none drag-handle text-slate-400">⋮⋮</span>
-                  <h4 class="font-medium text-slate-900">Question {{ i + 1 }}</h4>
-                  <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-600">
-                    Max {{ q.max_points }} pts
-                  </span>
-                  <span v-if="q.question_type" class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
-                    <Icon name="lucide:tag" class="h-3 w-3" /> {{ q.question_type }}
-                  </span>
-                </div>
-                <button class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs hover:bg-slate-50" @click="edit.removeQuestion(i)">
-                  <Icon name="lucide:trash-2" class="h-3.5 w-3.5" /> Remove
-                </button>
-              </div>
-              <div class="divider my-2" />
-
-              <div class="grid gap-3 md:grid-cols-3">
-            <label class="block">
-              <span class="text-sm text-slate-700">Question ID</span>
-              <input class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-slate-900 focus:border-brand-500 focus:outline-none"
-                     :value="q.question_id"
-                     @input="edit.setQuestionField(i, 'question_id', ($event.target as HTMLInputElement).value)" />
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-700">Max points</span>
-              <div class="mt-1 flex items-center gap-2">
-                <input type="number" min="0" class="w-24 rounded-lg border border-slate-300 bg-white p-2 text-slate-900 focus:border-brand-500 focus:outline-none"
-                       :value="q.max_points"
-                       @input="edit.setQuestionField(i, 'max_points', ($event.target as HTMLInputElement).value)" />
-                <span class="text-xs text-slate-500">pts</span>
-              </div>
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-700">Question type</span>
-              <select class="mt-1 w-full rounded-lg border p-2 text-slate-900 focus:outline-none"
-                      :class="(edit.detection[i]?.confidence ?? 0) >= 0.7 ? 'border-emerald-400' : (edit.detection[i]?.confidence ?? 0) > 0 ? 'border-amber-400' : 'border-slate-300'"
-                      :value="q.question_type || ''"
-                      @change="edit.setQuestionField(i, 'question_type', ($event.target as HTMLSelectElement).value)">
-                <option value="">—</option>
-                <option v-for="t in questionTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
-              </select>
-              <p v-if="edit.detection[i]" class="mt-1 text-xs" :class="(edit.detection[i]!.confidence ?? 0) < 0.7 ? 'text-amber-700' : 'text-emerald-700'">
-                AI detected: {{ edit.detection[i]!.name }} ({{ Math.round((edit.detection[i]!.confidence ?? 0) * 100) }}% confidence)
-              </p>
-            </label>
-              </div>
-
-              <label class="mt-3 block">
-            <span class="text-sm text-slate-700">Question text</span>
-            <textarea rows="3" class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-slate-900 focus:border-brand-500 focus:outline-none"
-                      :value="q.question_text"
-                      @input="edit.setQuestionField(i, 'question_text', ($event.target as HTMLTextAreaElement).value)" />
-              </label>
-
-              <div class="mt-4">
-                <div class="mb-2 flex items-center gap-2">
-                  <h5 class="text-sm font-semibold text-slate-900">Criteria</h5>
-                  <div class="flex items-center gap-3 text-xs text-slate-600">
-                    <span :class="criteriaSum(q) !== q.max_points ? 'text-amber-700' : ''">Sum: {{ criteriaSum(q) }} / {{ q.max_points }} pts</span>
-                    <span v-if="criteriaSum(q) !== q.max_points" class="text-amber-700">
-                      <template v-if="(q.max_points - criteriaSum(q)) > 0">Add {{ q.max_points - criteriaSum(q) }} pts to criteria</template>
-                      <template v-else>Subtract {{ Math.abs(q.max_points - criteriaSum(q)) }} pts from criteria</template>
-                    </span>
-                    <button v-if="criteriaSum(q) !== q.max_points" class="rounded border border-slate-300 bg-white px-2 py-0.5 hover:bg-slate-50" @click="edit.redistributeCriteriaEvenly(i)">Redistribute</button>
-                  </div>
-                </div>
-                <Draggable :model-value="q.criteria" :item-key="(_,j)=>j" handle=".drag-handle" @update:modelValue="edit.setCriteria(i, $event)">
-                  <template #item="{ element: c, index: j }">
-                    <div class="grid grid-cols-12 items-center gap-2 rounded-lg border border-transparent py-1 hover:border-slate-200">
-                      <input class="col-span-8 rounded-lg border outline-variant-border bg-white p-2 text-slate-900 focus:border-brand-500 focus:outline-none" :value="c.criterion"
-                             @input="edit.setCriterion(i, j, 'criterion', ($event.target as HTMLInputElement).value)" />
-                      <div class="col-span-3 flex items-center gap-2">
-                        <button class="rounded border outline-variant-border bg-white px-2 py-1 text-xs hover:bg-slate-50" @click="edit.setCriterion(i, j, 'max_points', Math.max(0, Number(c.max_points||0)-1))">−</button>
-                        <input class="w-full rounded-lg border outline-variant-border bg-white p-2 text-slate-900 text-center focus:border-brand-500 focus:outline-none" type="number" min="0" :value="c.max_points"
-                               @input="edit.setCriterion(i, j, 'max_points', ($event.target as HTMLInputElement).value)" />
-                        <button class="rounded border outline-variant-border bg-white px-2 py-1 text-xs hover:bg-slate-50" @click="edit.setCriterion(i, j, 'max_points', Number(c.max_points||0)+1)">+</button>
-                        <span class="text-xs text-slate-500">pts</span>
-                      </div>
-                      <button class="col-span-1 inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs hover:bg-slate-50" @click="edit.removeCriterion(i, j)">
-                        <Icon name="lucide:x" class="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </template>
-                </Draggable>
-                <div v-if="!q.criteria?.length" class="text-xs text-slate-500">No criteria yet.</div>
-              </div>
-              </div>
-              </div>
+            <RubricQuestionCard
+              :index="i"
+              :question="q"
+              :types="questionTypes"
+              :detection="edit.detection[i] ?? null"
+              @update:questionId="val => edit.setQuestionField(i, 'question_id', val)"
+              @update:maxPoints="val => edit.setQuestionField(i, 'max_points', val)"
+              @update:questionText="val => edit.setQuestionField(i, 'question_text', val)"
+              @update:questionType="val => edit.setQuestionField(i, 'question_type', val)"
+              @add-criterion="() => edit.addCriterion(i)"
+              @remove-criterion="j => edit.removeCriterion(i, j)"
+              @update-criterion="p => edit.setCriterion(i, p.index, p.field, p.value)"
+              @remove-question="() => edit.removeQuestion(i)"
+            />
           </template>
         </Draggable>
       </div>
@@ -371,8 +288,10 @@ function probabilityPreview(i: number) {
 
     <div v-else class="text-sm text-slate-600">
       No rubric loaded. Go back to upload.
-    </div>
-  </section>
+  </div>
+
+  
+</section>
 </template>
 
 

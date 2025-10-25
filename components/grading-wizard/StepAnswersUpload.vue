@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useDropZone } from '@vueuse/core'
 import { useWizardStore } from '~/stores/wizard'
 import { AnswersSchema } from '~/lib/schemas'
+import { StudentAnswerCard } from '~/components/cards'
 
 const wizard = useWizardStore()
 const error = ref<string | null>(null)
@@ -99,6 +100,35 @@ const previewRows = computed(() => {
 
   return results
 })
+
+// Answers review state (persist changes to wizard.answers)
+const selectedIndex = ref(0)
+const submissions = computed(() => wizard.answers?.submissions ?? [])
+const active = computed(() => submissions.value[selectedIndex.value] || null)
+const flags = ref<Record<string, { flagged: boolean; accepted: boolean }>>({})
+
+function selectStudent(i: number) { selectedIndex.value = i }
+
+function updateAnswer(qid: string, value: string) {
+  if (!wizard.answers) return
+  const subs = [...wizard.answers.submissions]
+  const idx = selectedIndex.value
+  const s = { ...subs[idx] }
+  const nextResponses = (s.responses || []).map((r: any) => r?.questionId === qid ? { ...r, answer: value } : r)
+  s.responses = nextResponses
+  subs[idx] = s
+  wizard.setAnswers({ ...(wizard.answers as any), submissions: subs })
+}
+
+function removeResponse(qid: string) {
+  if (!wizard.answers) return
+  const subs = [...wizard.answers.submissions]
+  const idx = selectedIndex.value
+  const s = { ...subs[idx] }
+  s.responses = (s.responses || []).filter((r: any) => r?.questionId !== qid)
+  subs[idx] = s
+  wizard.setAnswers({ ...(wizard.answers as any), submissions: subs })
+}
 
 async function handleFile(file: File) {
   try {
@@ -203,7 +233,7 @@ if (wizard.answers) {
     </div>
 
     <!-- Answers JSON Preview + Editor -->
-    <div v-if="wizard.answers" class="rounded-2xl border outline-variant-border bg-white p-5">
+  <div v-if="wizard.answers" class="rounded-2xl border outline-variant-border bg-white p-5">
       <div class="mb-2 flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 text-slate-800">
           <Icon name="lucide:braces" class="h-5 w-5 text-slate-700" />
@@ -251,6 +281,37 @@ if (wizard.answers) {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Answers Review -->
+      <div v-if="wizard.answers && submissions.length" class="mt-4 rounded-2xl border outline-variant-border bg-white p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:list" class="h-5 w-5 text-slate-700" />
+            <h5 class="text-sm font-semibold text-slate-800">Review Answers</h5>
+          </div>
+          <div class="flex items-center gap-2 text-sm">
+            <label class="text-slate-600">Student:</label>
+            <select class="rounded border border-slate-300 bg-white p-1.5 text-slate-900" :value="selectedIndex" @change="selectStudent(Number(($event.target as HTMLSelectElement).value))">
+              <option v-for="(s, i) in submissions" :key="s?.studentId || i" :value="i">{{ s?.studentId || `Student ${i+1}` }}</option>
+            </select>
+          </div>
+        </div>
+        <div v-if="active && Array.isArray(active.responses) && active.responses.length" class="grid gap-3 md:grid-cols-2">
+          <StudentAnswerCard
+            v-for="(resp, idx) in active.responses"
+            :key="resp?.questionId || idx"
+            :qid="String(resp?.questionId || `Q${idx+1}`)"
+            :model-value="String(resp?.answer ?? '')"
+            :flagged="Boolean(flags[resp?.questionId || `Q${idx+1}`]?.flagged)"
+            :accepted="Boolean(flags[resp?.questionId || `Q${idx+1}`]?.accepted)"
+            @update:modelValue="val => updateAnswer(String(resp?.questionId || `Q${idx+1}`), val)"
+            @update:flagged="v => { const id = String(resp?.questionId || `Q${idx+1}`); flags[id] = { ...(flags[id]||{ flagged:false, accepted:false }), flagged: v } }"
+            @update:accepted="v => { const id = String(resp?.questionId || `Q${idx+1}`); flags[id] = { ...(flags[id]||{ flagged:false, accepted:false }), accepted: v } }"
+            @remove="() => removeResponse(String(resp?.questionId || `Q${idx+1}`))"
+          />
+        </div>
+        <div v-else class="text-sm text-slate-600">No responses for this student.</div>
       </div>
     </div>
   </section>

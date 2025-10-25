@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useScanStore } from '~/stores/scan'
 import ScanWizard from '~/components/scan-processor/ScanWizard.vue'
-useHead({ title: 'Scan Processor – Wizard' })
+useHead({ title: 'Scan Wizard' })
 
 const route = useRoute()
 const scan = useScanStore()
@@ -29,10 +29,8 @@ onMounted(() => {
       <ScanWizard />
     </section>
   </div>
-  
 </template>
 
 <style scoped>
 </style>
-
 

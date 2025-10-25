@@ -35,4 +35,11 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
     },
   },
+
+  // Ensure server-only deps like pdf-lib are bundled correctly in Nitro
+  nitro: {
+    externals: {
+      inline: ['pdf-lib']
+    }
+  },
 })

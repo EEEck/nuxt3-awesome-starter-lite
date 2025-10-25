@@ -23,7 +23,8 @@
     "@vueuse/core": "^12.4.0",
     "pinia-plugin-persistedstate": "^4.0.2",
     "vuedraggable": "^4.1.0",
-    "vue-sonner": "^1.2.5"
+    "vue-sonner": "^1.2.5",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

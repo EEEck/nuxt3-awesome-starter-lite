@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import StepProfile from '~/components/grading-wizard/StepProfile.vue'
 import StepRubricUpload from '~/components/grading-wizard/StepRubricUpload.vue'
 import StepRubricEdit from '~/components/grading-wizard/StepRubricEdit.vue'
@@ -44,6 +45,31 @@ function handleStartOver() {
   wizard.startOver()
   rubricEdit.clearAll()
 }
+
+// Optional: load processed document by id from query
+const route = useRoute()
+onMounted(async () => {
+  const docId = route.query.doc as string | undefined
+  const type = (route.query.type as string | undefined) as ('student'|'rubric'|undefined)
+  if (!docId) return
+  try {
+    const doc: any = await $fetch(`/api/processed-documents/${encodeURIComponent(docId)}`)
+    const uploadType = (type || doc?.upload_type) as 'student'|'rubric'|undefined
+    if (uploadType === 'rubric') {
+      wizard.setRubric(doc)
+      wizard.go('rubric-edit')
+    } else if (uploadType === 'student') {
+      // map to Answers schema (single submission)
+      const answersMap = doc?.answers || {}
+      const responses = Object.entries(answersMap).map(([questionId, answer]: any) => ({ questionId: String(questionId), answer }))
+      const payload = { profileId: wizard.profileId ?? null, submissions: [{ studentId: doc?.student_name || 'student', responses }] }
+      wizard.setAnswers(payload)
+      wizard.go('answers-upload')
+    }
+  } catch (e) {
+    // ignore fetch errors
+  }
+})
 </script>
 
 <template>
