@@ -23,6 +23,11 @@ export interface ExamRubric {
 
 interface DetectionHint { typeId: string; name: string; confidence: number }
 
+/**
+ * Rubric Edit store
+ * Centralized source of truth for editing an ExamRubric with undo/redo, validation, and lightweight AI helpers.
+ * Keeps wizard.rubric in sync while providing ergonomic actions for UI components.
+ */
 export const useRubricEditStore = defineStore('rubricEdit', () => {
   const wizard = useWizardStore()
 
@@ -33,6 +38,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   const aiFeedback = ref<string | null>(null)
   const aiFeedbackLoading = ref(false)
 
+  /** Initialize editor state from the current wizard rubric */
   function initFromWizard() {
     if (wizard.rubric) {
       present.value = deepClone(wizard.rubric as any)
@@ -45,9 +51,13 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   // keep wizard.rubric in sync
   watch(present, (v) => { if (v) wizard.replaceRubric(deepClone(v) as any) })
 
+  /** Whether there is a previous state to revert to */
   const canUndo = computed(() => past.value.length > 0)
+  /** Whether there is a future state to redo */
   const canRedo = computed(() => future.value.length > 0)
+  /** Convenience accessor for the current question list */
   const questions = computed(() => present.value?.questions ?? [])
+  /** Total max points across all questions */
   const totalPoints = computed(() => questions.value.reduce((s,q)=>s+(q.max_points||0),0))
 
   // Validation: mirror legacy guardrails (non-negative, sum match, non-empty ids/text)
@@ -67,6 +77,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   })
   const hasValidationIssues = computed(() => validationIssues.value.length > 0)
 
+  /** Commit a new rubric state and push current present to history */
   function commit(next: ExamRubric) {
     if (!present.value) { present.value = deepClone(next); return }
     past.value.push(deepClone(present.value))
@@ -74,12 +85,14 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     future.value = []
   }
 
+  /** Revert to the previous state if available */
   function undo() {
     if (!canUndo.value) return
     const prev = past.value.pop()!
     future.value.unshift(deepClone(present.value!))
     present.value = prev
   }
+  /** Reapply a reverted state if available */
   function redo() {
     if (!canRedo.value) return
     const next = future.value.shift()!
@@ -87,14 +100,17 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     present.value = next
   }
 
+  /** Set exam/assignment name */
   function setExamName(name: string) {
     if (!present.value) return
     commit({ ...present.value, exam_name: name })
   }
+  /** Set general grading instructions */
   function setGeneralInstructions(text: string) {
     if (!present.value) return
     commit({ ...present.value, general_instructions: text })
   }
+  /** Resize the question list to n items (adding plain questions or trimming) */
   function setTotalQuestions(n: number) {
     if (!present.value) return
     const current = deepClone(present.value)
@@ -114,6 +130,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     }
     commit(current)
   }
+  /** Update a single field on question i (auto-coerces number for max_points) */
   function setQuestionField(i: number, field: keyof RubricQuestion, value: any) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -121,6 +138,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     next.questions[i][field] = field === 'max_points' ? Number(value) : value
     commit(next)
   }
+  /** Append a new blank question with a single criterion */
   function addQuestion() {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -128,6 +146,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     next.questions.push({ question_id: `Q${idx+1}`, question_text: '', max_points: 10, criteria: [{ criterion:'', max_points: 10 }] })
     commit(next)
   }
+  /** Remove question i (keeps at least one question, renumbers IDs) */
   function removeQuestion(i: number) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -136,6 +155,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     next.questions.forEach((q, j) => { q.question_id = `Q${j+1}` })
     commit(next)
   }
+  /** Append a new criterion to question i and sync max_points to sum */
   function addCriterion(i: number) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -145,6 +165,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     next.questions[i].max_points = sum
     commit(next)
   }
+  /** Remove criterion j from question i (keeps at least one), sync max_points */
   function removeCriterion(i: number, j: number) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -155,6 +176,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     next.questions[i].max_points = sum
     commit(next)
   }
+  /** Update a criterion field on question i, criterion j, syncing question max_points */
   function setCriterion(i: number, j: number, field: keyof Criterion, v: any) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -167,6 +189,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   }
 
   // Reorder / bulk setters and helpers
+  /** Replace the entire question array, ensuring missing IDs are synthesized */
   function setQuestions(newQs: RubricQuestion[]) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -175,6 +198,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     commit(next)
   }
 
+  /** Replace the criteria array for question i */
   function setCriteria(i: number, newCriteria: Criterion[]) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -182,6 +206,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     commit(next)
   }
 
+  /** Evenly distribute a question's max_points across its criteria */
   function redistributeCriteriaEvenly(i: number) {
     if (!present.value) return
     const next = deepClone(present.value)
@@ -197,6 +222,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     commit(next)
   }
 
+  /** Call backend to detect question types and optionally set question_type based on confidence */
   async function detectQuestionTypes() {
     if (!present.value) return
     const profile = wizard.profileId ? undefined : undefined // placeholder; we can expand to include profile data later
@@ -228,6 +254,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
   }
 
   // AI rubric feedback (placeholder until backend connected)
+  /** Call backend (or fallback) to get rubric feedback; stores result in aiFeedback */
   async function requestFeedback(clarification: string) {
     if (!present.value) return
     aiFeedbackLoading.value = true
@@ -252,8 +279,10 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     }
   }
 
+  /** Clear the current AI feedback */
   function dismissFeedback() { aiFeedback.value = null }
 
+  /** Download the current rubric as a JSON file */
   function download() {
     if (!present.value) return
     const blob = new Blob([JSON.stringify(present.value, null, 2)], { type: 'application/json' })
@@ -264,6 +293,7 @@ export const useRubricEditStore = defineStore('rubricEdit', () => {
     URL.revokeObjectURL(a.href)
   }
 
+  /** Reset editor state entirely */
   function clearAll() {
     past.value = []
     future.value = []

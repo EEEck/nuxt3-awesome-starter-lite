@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import BaseReviewCard from '~/components/shared/BaseReviewCard.vue'
 import RubricQuestionEditor from '~/components/shared/RubricQuestionEditor.vue'
+import type { RubricQuestion } from '~/types/rubric'
 
 defineProps<{ 
   index: number; 
-  question: any; 
+  question: RubricQuestion; 
   types?: { id: string; name: string }[] | null;
   detection?: { name: string; confidence?: number } | null;
 }>()

@@ -127,6 +127,7 @@ export const useScanStore = defineStore('scan', () => {
   const canUndo = computed(() => past.value.length > 0)
   const canRedo = computed(() => future.value.length > 0)
 
+  /** Snapshot current processed data and cards for undo/redo */
   function snapshot() {
     past.value.push({ data: deepClone(processedData.value), cards: deepClone(cards.value) })
     if (past.value.length > 50) past.value.shift()
@@ -135,9 +136,12 @@ export const useScanStore = defineStore('scan', () => {
 
   function deepClone<T>(v: T): T { try { /* @ts-ignore */ return structuredClone(v) } catch { return JSON.parse(JSON.stringify(v)) as T } }
 
+  /** Change the current scan step */
   function go(next: ScanStep) { step.value = next }
+  /** Assign current upload type (student|rubric) */
   function setUploadType(t: UploadType) { uploadType.value = t }
 
+  /** Bind a selected file and create preview URLs */
   function setFile(f: File | null) {
     error.value = null
     file.value = null
@@ -163,6 +167,7 @@ export const useScanStore = defineStore('scan', () => {
     }
   }
 
+  /** Clear current file and revoke preview URLs */
   function removeFile() {
     file.value = null
     pdfPageCount.value = null
@@ -172,15 +177,18 @@ export const useScanStore = defineStore('scan', () => {
     revokePreviewUrls()
   }
 
+  /** Revoke any object URLs created for previews */
   function revokePreviewUrls() {
     if (pdfPreviewUrl.value) { URL.revokeObjectURL(pdfPreviewUrl.value); pdfPreviewUrl.value = null }
     if (imagePreviewUrl.value) { URL.revokeObjectURL(imagePreviewUrl.value); imagePreviewUrl.value = null }
   }
 
+  /** Store optional custom instructions for the backend */
   function setCustomInstructions(text: string) {
     customInstructions.value = text
   }
 
+  /** Set page selection mode (all|custom); resets message on 'all' */
   function setPageSelection(type: 'all'|'custom') {
     pageSelection.value.type = type
     if (type === 'all') {
@@ -190,10 +198,12 @@ export const useScanStore = defineStore('scan', () => {
     }
   }
 
+  /** Update the custom page selection text (validation separate) */
   function setCustomPages(input: string) {
     pageSelection.value.custom = input
   }
 
+  /** Validate custom page ranges against detected PDF page count */
   function validatePageRange(input: string) {
     // Empty is valid when using 'all'
     if (!input) { pageRangeValid.value = true; pageRangeMessage.value = ''; return true }
@@ -226,6 +236,7 @@ export const useScanStore = defineStore('scan', () => {
     }
   }
 
+  /** Call backend to detect page count (falls back to heuristic) */
   async function detectPdfPageCount() {
     if (!file.value) return
     try {
@@ -249,6 +260,7 @@ export const useScanStore = defineStore('scan', () => {
     }
   }
 
+  /** Update processing status and optional text/progress */
   function setProcessing(status: 'idle'|'processing'|'retry'|'error'|'success', title?: string, message?: string, progress?: number) {
     processingStatus.value = status
     if (title) processingTitle.value = title
@@ -256,6 +268,7 @@ export const useScanStore = defineStore('scan', () => {
     if (typeof progress === 'number') processingProgress.value = progress
   }
 
+  /** Upload the file and orchestrate processing → formatting results */
   async function processDocument() {
     if (!file.value || !uploadType.value) return
     // Move to process step
@@ -321,12 +334,14 @@ export const useScanStore = defineStore('scan', () => {
   }
 
   // Review updates (student uploads)
+  /** Update the student name inside processedData */
   function setStudentName(name: string) {
     if (!processedData.value) return
     snapshot()
     processedData.value = { ...processedData.value, student_name: name }
   }
 
+  /** Update answer for a question ID with snapshot */
   function setAnswer(qid: string, text: string) {
     if (!processedData.value) return
     snapshot()
@@ -335,6 +350,7 @@ export const useScanStore = defineStore('scan', () => {
     processedData.value = { ...processedData.value, answers }
   }
 
+  /** Remove an answer entry by question ID with snapshot */
   function removeAnswer(qid: string) {
     if (!processedData.value) return
     snapshot()
@@ -345,20 +361,26 @@ export const useScanStore = defineStore('scan', () => {
 
   // Simple card state (flag/accept)
   function ensureCard(id: string) { if (!cards.value[id]) cards.value[id] = { flagged: false, accepted: false }; return cards.value[id] }
+  /** Toggle flagged state for a card ID */
   function toggleFlag(id: string) { snapshot(); const c = ensureCard(id); c.flagged = !c.flagged; if (c.flagged) c.accepted = false }
+  /** Toggle accepted state for a card ID */
   function toggleAccept(id: string) { snapshot(); const c = ensureCard(id); c.accepted = !c.accepted; if (c.accepted) c.flagged = false }
+  /** Track which card is active (e.g., to highlight on the document) */
   function setActiveCard(id: string | null) { activeCardId.value = id }
 
   // -------- Rubric helpers (wizard review) --------
+  /** Locate a rubric question index by its question_id */
   function findQuestionIndexById(qid: string): number {
     const qs = processedData.value?.questions || []
     return qs.findIndex((q: any) => String(q.question_id || '') === String(qid))
   }
+  /** Recalculate a question's max_points from its criteria sum */
   function recomputeQuestionMaxPoints(q: any) {
     if (!q || !Array.isArray(q.criteria)) return
     const sum = q.criteria.reduce((s: number, c: any) => s + (Number(c.max_points) || 0), 0)
     q.max_points = sum
   }
+  /** Update a rubric field for question with id (snapshot included) */
   function updateRubricField(qid: string, field: 'question_id'|'max_points'|'question_text', value: any) {
     if (!processedData.value) return
     snapshot()
@@ -371,6 +393,7 @@ export const useScanStore = defineStore('scan', () => {
     qs[idx] = q
     processedData.value = { ...processedData.value, questions: qs }
   }
+  /** Append a criterion to a rubric question by id */
   function addCriterionToQuestion(qid: string) {
     if (!processedData.value) return
     snapshot()
@@ -385,6 +408,7 @@ export const useScanStore = defineStore('scan', () => {
     qs[idx] = q
     processedData.value = { ...processedData.value, questions: qs }
   }
+  /** Remove a criterion from a rubric question by id */
   function removeCriterionFromQuestion(qid: string, cIdx: number) {
     if (!processedData.value) return
     snapshot()
@@ -400,6 +424,7 @@ export const useScanStore = defineStore('scan', () => {
     qs[idx] = q
     processedData.value = { ...processedData.value, questions: qs }
   }
+  /** Update a sub-criterion for a rubric question by id */
   function setCriterionInQuestion(qid: string, cIdx: number, field: 'criterion'|'max_points', value: any) {
     if (!processedData.value) return
     snapshot()
@@ -418,6 +443,7 @@ export const useScanStore = defineStore('scan', () => {
     qs[idx] = q
     processedData.value = { ...processedData.value, questions: qs }
   }
+  /** Remove rubric question by index in processedData */
   function removeQuestion(index: number) {
     if (!processedData.value) return
     snapshot()
@@ -429,6 +455,7 @@ export const useScanStore = defineStore('scan', () => {
     processedData.value = { ...processedData.value, questions: qs }
   }
 
+  /** Undo last edit to processedData/cards */
   function undo() {
     if (!canUndo.value) return
     const last = past.value.pop()!
@@ -436,6 +463,7 @@ export const useScanStore = defineStore('scan', () => {
     processedData.value = deepClone(last.data)
     cards.value = deepClone(last.cards)
   }
+  /** Redo last undone edit to processedData/cards */
   function redo() {
     if (!canRedo.value) return
     const next = future.value.shift()!
@@ -464,6 +492,7 @@ export const useScanStore = defineStore('scan', () => {
 
   // Backend persistence (align to hub)
   const lastSavedId = ref<string | null>(null)
+  /** Persist processedData to backend (mock) and return id */
   async function saveToBackend() {
     if (!processedData.value) return null
     const res = await fetch('/api/processed-documents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(processedData.value) })
@@ -472,6 +501,7 @@ export const useScanStore = defineStore('scan', () => {
     lastSavedId.value = data?.document_id || null
     return lastSavedId.value
   }
+  /** Download processedData as a JSON file */
   function exportJson(filename?: string) {
     if (!processedData.value) return
     const name = filename || `${uploadType.value || 'document'}_${new Date().toISOString().slice(0,10)}.json`
@@ -483,6 +513,7 @@ export const useScanStore = defineStore('scan', () => {
 
   // Lightweight local session store (no network)
   const SESSIONS_KEY = 'scan:sessions'
+  /** Load saved sessions list from localStorage */
   function readSessions(): StoredSession[] {
     try {
       const raw = localStorage.getItem(SESSIONS_KEY)
@@ -492,10 +523,12 @@ export const useScanStore = defineStore('scan', () => {
       return []
     }
   }
+  /** Write sessions list to localStorage */
   function writeSessions(list: StoredSession[]) {
     localStorage.setItem(SESSIONS_KEY, JSON.stringify(list))
   }
 
+  /** Refresh the local sessions list for the document picker */
   async function fetchDocuments() {
     docsLoading.value = true
     docsError.value = null
@@ -510,12 +543,15 @@ export const useScanStore = defineStore('scan', () => {
     }
   }
 
+  /** Open the document picker modal and load sessions */
   function openPicker() {
     pickerOpen.value = true
     fetchDocuments()
   }
+  /** Close the document picker modal */
   function closePicker() { pickerOpen.value = false }
 
+  /** Load a stored session by id and jump to review */
   async function loadDocument(id: string) {
     const session = readSessions().find(s => s.document_id === id)
     if (!session) {
@@ -530,6 +566,7 @@ export const useScanStore = defineStore('scan', () => {
   }
 
   // Helper to store a lightweight JSON from rubric or student upload
+  /** Persist a new local session and return its id */
   function saveSession(meta: { original_filename: string; upload_type: 'student'|'rubric' }, data: any) {
     const now = new Date().toISOString()
     const id = (globalThis.crypto?.randomUUID?.() ?? `local-${Date.now()}`)

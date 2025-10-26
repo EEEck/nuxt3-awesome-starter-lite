@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
 
+import type { RubricQuestion } from '~/types/rubric'
+
 const props = withDefaults(defineProps<{
   index?: number
-  question: any
+  question: RubricQuestion
   showValidation?: boolean
   compactId?: boolean
 }>(), {
@@ -23,7 +25,7 @@ function onMax(e: Event) { emit('update:maxPoints', Number((e.target as HTMLInpu
 function onText(e: Event) { emit('update:questionText', (e.target as HTMLTextAreaElement).value) }
 
 const criteria = computed(() => Array.isArray(props.question?.criteria) ? props.question.criteria : [])
-const criteriaSum = computed(() => criteria.value.reduce((s: number, c: any) => s + (Number(c?.max_points) || 0), 0))
+const criteriaSum = computed(() => criteria.value.reduce((s: number, c) => s + (Number(c?.max_points) || 0), 0))
 const maxPoints = computed(() => Number(props.question?.max_points) || 0)
 const hasMismatch = computed(() => (criteria.value.length > 0) && (criteriaSum.value !== maxPoints.value))
 const hasNegative = computed(() => maxPoints.value < 0 || criteria.value.some((c: any) => Number(c?.max_points) < 0))

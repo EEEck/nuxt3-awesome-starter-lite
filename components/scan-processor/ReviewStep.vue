@@ -3,7 +3,7 @@ import { computed, ref, onBeforeUnmount } from 'vue'
 import { useScanStore } from '~/stores/scan'
 import DocumentViewer from '~/components/ui/DocumentViewer.vue'
 import { StudentNameCard } from '~/components/cards'
-import StudentAnswerCard from '~/components/scan-processor/cards/StudentAnswerCard.vue'
+import StudentAnswerCard from '~/components/cards/StudentAnswerCard.vue'
 import RubricQuestionCard from '~/components/scan-processor/cards/RubricQuestionCard.vue'
 import ConfidenceIndicator from '~/components/ui/ConfidenceIndicator.vue'
 import { useRouter } from 'vue-router'
@@ -91,6 +91,9 @@ onBeforeUnmount(() => { dragging = false })
               :flagged="(scan.cards[qid as string]?.flagged) || false"
               :accepted="(scan.cards[qid as string]?.accepted) || false"
               :confidence="(scan.processedData?.question_confidence?.[qid as string] ?? null) as any"
+              :show-glow="true"
+              :show-confidence="true"
+              :clickable="true"
               @click="scan.setActiveCard(qid as string)"
               @update:flagged="() => scan.toggleFlag(qid as string)"
               @update:accepted="() => scan.toggleAccept(qid as string)"
