@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import BaseReviewCard from '~/components/shared/BaseReviewCard.vue'
 import RubricQuestionEditor from '~/components/shared/RubricQuestionEditor.vue'
+import ReviewActions from '~/components/shared/ReviewActions.vue'
+import type { RubricQuestion } from '~/types/rubric'
 
-defineProps<{ index: number; question: any; flagged?: boolean; accepted?: boolean }>()
+defineProps<{ index: number; question: RubricQuestion; flagged?: boolean; accepted?: boolean }>()
 const emit = defineEmits<{
   'update:questionId': [value: string]
   'update:maxPoints': [value: number]
@@ -18,23 +20,12 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseReviewCard :title="`Question ${index + 1}`" :subtitle="question.question_id" :flagged="flagged" :accepted="accepted" :show-glow="true" :show-confidence="false" @click="$emit('click')">
+  <BaseReviewCard :title="`Question ${index + 1}`" :subtitle="question.question_id" :flagged="flagged" :accepted="accepted" :show-glow="false" :show-confidence="false" @click="$emit('click')">
     <template #actions>
-      <button class="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs"
-              :class="accepted ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-slate-300 text-slate-300 dark:border-slate-700'"
-              @click.stop="$emit('update:accepted', !accepted)">
-        <Icon :name="accepted ? 'lucide:check-circle' : 'lucide:check'" class="h-3 w-3" />
-        {{ accepted ? 'Approved' : 'Approve' }}
-      </button>
-      <button class="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs"
-              :class="flagged ? 'border-red-500 bg-red-500/10 text-red-300' : 'border-slate-300 text-slate-300 dark:border-slate-700'"
-              @click.stop="$emit('update:flagged', !flagged)">
-        <Icon name="lucide:flag" class="h-3 w-3" />
-        {{ flagged ? 'Flagged' : 'Flag for Review' }}
-      </button>
-      <button class="rounded border px-2 py-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-800" @click.stop="$emit('remove-question')">
-        <Icon name="lucide:trash-2" class="h-3 w-3" /> Remove
-      </button>
+      <ReviewActions :flagged="flagged" :accepted="accepted" :show-approve="true" :show-flag="true" :show-remove="true"
+                     @update:flagged="$emit('update:flagged', $event)"
+                     @update:accepted="$emit('update:accepted', $event)"
+                     @remove="$emit('remove-question')" />
     </template>
 
     <RubricQuestionEditor

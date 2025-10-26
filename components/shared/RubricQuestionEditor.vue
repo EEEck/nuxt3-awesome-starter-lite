@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 
-const props = defineProps<{
+import type { RubricQuestion } from '~/types/rubric'
+
+const props = withDefaults(defineProps<{
   index?: number
-  question: any
+  question: RubricQuestion
   showValidation?: boolean
-}>()
+  compactId?: boolean
+}>(), {
+  compactId: true
+})
 const emit = defineEmits<{
   'update:questionId': [value: string]
   'update:maxPoints': [value: number]
@@ -20,26 +25,34 @@ function onMax(e: Event) { emit('update:maxPoints', Number((e.target as HTMLInpu
 function onText(e: Event) { emit('update:questionText', (e.target as HTMLTextAreaElement).value) }
 
 const criteria = computed(() => Array.isArray(props.question?.criteria) ? props.question.criteria : [])
-const criteriaSum = computed(() => criteria.value.reduce((s: number, c: any) => s + (Number(c?.max_points) || 0), 0))
+const criteriaSum = computed(() => criteria.value.reduce((s: number, c) => s + (Number(c?.max_points) || 0), 0))
 const maxPoints = computed(() => Number(props.question?.max_points) || 0)
 const hasMismatch = computed(() => (criteria.value.length > 0) && (criteriaSum.value !== maxPoints.value))
 const hasNegative = computed(() => maxPoints.value < 0 || criteria.value.some((c: any) => Number(c?.max_points) < 0))
+const slots = useSlots()
+const gridCols = computed(() => (slots.meta ? 'md:grid-cols-3' : 'md:grid-cols-2'))
 </script>
 
 <template>
   <div class="space-y-3">
-    <div class="grid gap-3 md:grid-cols-2">
+    <div class="grid gap-3" :class="gridCols">
       <label class="block text-sm">
-        <span class="text-slate-300">Question ID</span>
-        <input class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200" :value="question.question_id" @input="onId" />
+        <span class="block text-slate-300">Question ID</span>
+        <input
+          class="mt-1 rounded-lg border border-slate-300 bg-white p-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          :class="props.compactId ? 'w-36 md:w-48' : 'w-full'"
+          :value="question.question_id"
+          @input="onId"
+        />
       </label>
       <label class="block text-sm">
-        <span class="text-slate-300">Max Points</span>
+        <span class="block text-slate-300">Max Points</span>
         <div class="mt-1 flex items-center gap-2">
           <input class="w-24 rounded-lg border border-slate-300 bg-white p-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200" :value="question.max_points" type="number" min="0" @input="onMax" />
           <span class="text-xs text-slate-500">pts</span>
         </div>
       </label>
+      <slot name="meta" />
     </div>
 
     <div>

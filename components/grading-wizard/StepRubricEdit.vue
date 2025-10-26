@@ -21,17 +21,18 @@ watch(() => wiz.rubric, (v) => {
   if (v && !edit.present) edit.initFromWizard()
 })
 
+const defaultQuestionTypes = [
+  { id: 'free_text', name: 'Free Text' },
+  { id: 'multiple_choice', name: 'Multiple Choice' },
+  { id: 'short_answer', name: 'Short Answer' },
+  { id: 'true_false', name: 'True/False' },
+  { id: 'essay', name: 'Essay' },
+  { id: 'math_problem', name: 'Math Problem' },
+]
+
 const questionTypes = computed(() => {
   const p = wiz.profileId ? profiles.byId(wiz.profileId) : null
-  return p?.questionTypes?.length
-    ? p.questionTypes.map(t => ({ id: t.id, name: t.name }))
-    : [
-        { id: 'multiple_choice', name: 'Multiple Choice' },
-        { id: 'short_answer', name: 'Short Answer' },
-        { id: 'essay', name: 'Essay' },
-        { id: 'math_problem', name: 'Math Problem' },
-        { id: 'true_false', name: 'True/False' },
-      ]
+  return p?.questionTypes?.length ? p.questionTypes : defaultQuestionTypes
 })
 
 function detectTypes() {

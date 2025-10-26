@@ -1,29 +1,36 @@
 <script setup lang="ts">
+import { useHead } from '#app'
+useHead({ title: 'Choose a Workflow' })
 </script>
 
 <template>
-  <section class="mx-auto max-w-3xl space-y-6 px-6 py-12">
-    <header class="space-y-2">
-      <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">Welcome</p>
-      <h1 class="text-3xl font-bold">AI Grading Workspace</h1>
-      <p class="text-slate-600 dark:text-slate-300">
-        Start the guided grading wizard to upload a rubric, provide student answers, and review results.
-      </p>
-    </header>
-    <div class="flex gap-3">
-      <NuxtLink
-        to="/grading-wizard"
-        class="inline-flex items-center justify-center rounded-full bg-brand-600 px-5 py-2 font-semibold text-white shadow-subtle transition hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
-      >
-        Launch Grading Wizard
+  <div class="mx-auto max-w-5xl space-y-8 px-6 py-10">
+    <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Choose a Workflow</h1>
+    <p class="text-sm text-slate-600 dark:text-slate-300">Pick the flow you want to run. You can use them independently.</p>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <NuxtLink to="/grading-wizard" class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-subtle transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-2 flex items-center gap-2">
+          <Icon name="lucide:wand-2" class="h-5 w-5 text-brand-600" />
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Grading Wizard</h2>
+        </div>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Configure profiles and rubrics, upload answers, run grading, and review results.</p>
+        <div class="mt-3 text-xs text-slate-500">Route: /grading-wizard</div>
       </NuxtLink>
-      <NuxtLink
-        to="/dashboard"
-        class="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
-      >
-        Go to Dashboard
+
+      <NuxtLink to="/scan-processor/wizard" class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-subtle transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-2 flex items-center gap-2">
+          <Icon name="lucide:scan-line" class="h-5 w-5 text-emerald-600" />
+          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Scan Processor</h2>
+        </div>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Upload scanned documents and review AI‑extracted rubric or student answers.</p>
+        <div class="mt-3 text-xs text-slate-500">Route: /scan-processor/wizard</div>
       </NuxtLink>
     </div>
-  </section>
+  </div>
 </template>
+
+<style scoped>
+.shadow-subtle { box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 1px rgba(0,0,0,.04); }
+</style>
 

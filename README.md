@@ -41,6 +41,28 @@ pnpm build               # compile for production
 pnpm preview             # serve the built output locally
 ```
 
+## Architecture overview
+
+- Routing
+  - `pages/grading-wizard` drives the step-by-step flow (profile → rubric → answers → grade → results).
+  - `components/scan-processor` provides an optional split‑view to review AI‑extracted rubric/answers.
+- State (Pinia)
+  - `stores/wizard.ts` holds wizard step, selected profile, rubric, answers, and results.
+  - `stores/rubricEdit.ts` manages rubric editing with undo/redo and validation.
+  - `stores/scan.ts` powers the scan‑processor (upload, processing, review, export).
+  - `stores/profiles.ts` provides grading profiles and question type catalogs.
+- Shared UI building blocks
+  - `components/shared/BaseReviewCard.vue`: consistent card chrome and accent behavior.
+  - `components/shared/RubricQuestionEditor.vue`: question fields + criteria list, with validation badges.
+  - `components/shared/ReviewActions.vue`: Approve/Flag/Remove actions (configurable).
+  - `types/rubric.ts`: Criterion, RubricQuestion, ExamRubric types.
+- Cards (composition over duplication)
+  - Wizard: `components/cards/RubricQuestionCard.vue` (adds Question Type; no approve/flag).
+  - Scan: `components/scan-processor/cards/RubricQuestionCard.vue` (approve/flag/remove; no Question Type).
+  - `components/cards/StudentAnswerCard.vue` is shared; scan enables glow/confidence/clickable via props.
+
+Data flow: parents pass immutable data to cards; cards emit granular updates (e.g., `update:questionId`, `update-criterion`). Stores apply the change, and auto‑sync rules (like criteria sum → max points) live in the stores.
+
 ### Testing
 
 ```bash
@@ -90,11 +112,79 @@ Playwright runs the bundled smoke test that walks each wizard step. Use the `--u
 
 These can be added incrementally without disrupting the current structure.
 
+## Integrating into another Nuxt app
+
+1) Copy directories (or mount as a package):
+   - `components/shared`, `components/cards`, `components/grading-wizard`, `components/scan-processor`
+   - `stores` (at least `wizard.ts`, `rubricEdit.ts`, `profiles.ts`, `scan.ts`)
+   - `types/rubric.ts`, any used `lib/*` (e.g., `lib/schemas.ts`)
+2) Ensure modules in `nuxt.config.ts`:
+   - `@pinia/nuxt`, `@nuxtjs/tailwindcss`, `@vueuse/nuxt`, and your icon solution (`nuxt-icon`)
+3) Add routes/pages
+   - Mount `pages/grading-wizard` (or nest under your app’s route). Optionally expose the scan processor page.
+4) Server stubs (optional while wiring backend)
+   - Keep `server/api/*` mocks or point to your backend via env (e.g., `NUXT_PUBLIC_API_BASE`).
+5) Styling
+   - Merge Tailwind config tokens if needed; shared components only rely on Tailwind utilities.
+6) QA
+   - Run `pnpm dev`, visit `/grading-wizard`, and walk through the steps. If using the scan processor, exercise upload → review.
+
+## Compose: one repo, two services (Python + Vue)
+
+Use `docker-compose.full.yml` when this frontend lives under `./frontend_vue` and your backend under `./backend` in a single repo.
+
+Dev (live reload on both):
+
+```bash
+docker compose -f docker-compose.full.yml up --build
+```
+
+Notes
+- Frontend base URL:
+  - Preferred: proxy via Nuxt server routes → set `NUXT_PUBLIC_API_BASE=/api` and implement a forwarder in `server/api/*`.
+  - Direct browser → backend: set `NUXT_PUBLIC_API_BASE=http://localhost:8000` and enable CORS in your Python backend.
+- Ports: frontend 3000 (SSR/dev) and 24678 (HMR), backend 8000.
+- The compose mounts `./frontend_vue` so you can edit locally and hot‑reload.
+
+## Developer API docs
+
+- Store and types API (Markdown via TypeDoc)
+  - `pnpm docs:api` → outputs Markdown under `docs/api/` for all TS stores and types.
+  - We use TSDoc/JSDoc comments on store actions/getters to drive this.
+- Component props/events (Markdown via vue-docgen)
+  - `pnpm docs:components` → outputs Markdown under `docs/components/` for all Vue SFCs in `components/`.
+  - vue‑docgen parses `script setup` props/emits and generates tables automatically.
+
+See `docs/backend_integration.md` for how the current mock endpoints map to real services and how to switch over.
+
 ## Keeping dependencies fresh
 
 The project pins Nuxt 3.19, Tailwind 3.4 (via the module), Vue Query 5.90, and the latest Zod 3.25 release. Run `pnpm outdated`
 periodically to confirm there are no newer compatible versions. Because Nuxt follows semantic versioning, staying within the `^3.x`
 range keeps you on the latest minor updates automatically.
+
+## Vue/Nuxt packages used
+
+- `nuxt`
+  - Nuxt 3 app framework (routing, server routes, dev server, build).
+- `@pinia/nuxt` + `pinia`
+  - State management. Provides `defineStore` and Nuxt auto‑registration of stores under `stores/`.
+- `@vueuse/core`
+  - Utility composables (e.g., `useMagicKeys`, drag/resize helpers). Reduces boilerplate watchers/refs.
+- `@tanstack/vue-query`
+  - Data fetching/cache. Use queries/mutations for server calls, optimistic updates, retries.
+- `@nuxtjs/tailwindcss`
+  - Tailwind integration and build‑time config. All components styled with Tailwind utilities.
+- `@nuxt/icon`
+  - Lightweight icon component that renders Iconify sets (lucide/mdi bundled as dev deps).
+- `zod`
+  - Runtime schema validation for payloads and API IO (`lib/schemas.ts`).
+- `vuedraggable`
+  - Drag‑and‑drop lists (reordering criteria/questions). Wizard uses a visible drag handle.
+- `vue-sonner`
+  - Toast notifications (e.g., detect question types feedback).
+- `pdf-lib`
+  - Client‑side PDF slicing/processing utilities used by the scan processor.
 
 ## License
 

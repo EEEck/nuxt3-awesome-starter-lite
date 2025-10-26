@@ -1,0 +1,49 @@
+version: "3.9"
+
+# Compose template when this frontend lives inside a larger app repo
+# at path ./frontend_vue and the Python backend lives at ./backend.
+
+services:
+  backend:
+    # Adjust to your backend path and Dockerfile
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Example CORS for local dev if frontend calls backend directly
+      - CORS_ALLOW_ORIGIN=http://localhost:3000
+    # volumes:
+    #   - ./backend:/app  # enable for live reload if your backend supports it
+
+  frontend:
+    # Frontend build context is the nested Vue/Nuxt app directory
+    build:
+      context: ./frontend_vue
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"   # Nuxt dev/SSR server
+      - "24678:24678" # Vite HMR (dev only)
+    environment:
+      # Option A: Proxy through Nuxt server routes (preferred: avoids CORS)
+      # - NUXT_PUBLIC_API_BASE=/api
+      # Option B: Browser calls backend directly (enable CORS)
+      - NUXT_PUBLIC_API_BASE=http://localhost:8000
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=3000
+      - CHOKIDAR_USEPOLLING=1
+      - WATCHPACK_POLLING=true
+      - NUXT_TELEMETRY_DISABLED=1
+    volumes:
+      - ./frontend_vue:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_pnpm_store:/pnpm/store
+    command: sh -lc "pnpm install && pnpm dev --host 0.0.0.0"
+    depends_on:
+      - backend
+
+volumes:
+  frontend_node_modules:
+  frontend_pnpm_store:
+
