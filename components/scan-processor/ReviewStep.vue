@@ -91,7 +91,7 @@ onBeforeUnmount(() => { dragging = false })
               :flagged="(scan.cards[qid as string]?.flagged) || false"
               :accepted="(scan.cards[qid as string]?.accepted) || false"
               :confidence="(scan.processedData?.question_confidence?.[qid as string] ?? null) as any"
-              :show-glow="true"
+              :show-glow="false"
               :show-confidence="true"
               :clickable="true"
               @click="scan.setActiveCard(qid as string)"

@@ -20,7 +20,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseReviewCard :title="`Question ${index + 1}`" :subtitle="question.question_id" :flagged="flagged" :accepted="accepted" :show-glow="true" :show-confidence="false" @click="$emit('click')">
+  <BaseReviewCard :title="`Question ${index + 1}`" :subtitle="question.question_id" :flagged="flagged" :accepted="accepted" :show-glow="false" :show-confidence="false" @click="$emit('click')">
     <template #actions>
       <ReviewActions :flagged="flagged" :accepted="accepted" :show-approve="true" :show-flag="true" :show-remove="true"
                      @update:flagged="$emit('update:flagged', $event)"
