@@ -129,6 +129,23 @@ These can be added incrementally without disrupting the current structure.
 6) QA
    - Run `pnpm dev`, visit `/grading-wizard`, and walk through the steps. If using the scan processor, exercise upload → review.
 
+## Compose: one repo, two services (Python + Vue)
+
+Use `docker-compose.full.yml` when this frontend lives under `./frontend_vue` and your backend under `./backend` in a single repo.
+
+Dev (live reload on both):
+
+```bash
+docker compose -f docker-compose.full.yml up --build
+```
+
+Notes
+- Frontend base URL:
+  - Preferred: proxy via Nuxt server routes → set `NUXT_PUBLIC_API_BASE=/api` and implement a forwarder in `server/api/*`.
+  - Direct browser → backend: set `NUXT_PUBLIC_API_BASE=http://localhost:8000` and enable CORS in your Python backend.
+- Ports: frontend 3000 (SSR/dev) and 24678 (HMR), backend 8000.
+- The compose mounts `./frontend_vue` so you can edit locally and hot‑reload.
+
 ## Developer API docs
 
 - Store and types API (Markdown via TypeDoc)
