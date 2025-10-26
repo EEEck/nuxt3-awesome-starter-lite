@@ -287,6 +287,11 @@ export const useScanStore = defineStore('scan', () => {
         if (!sliceRes.ok) throw new Error(await sliceRes.text())
         const slicedBlob = await sliceRes.blob()
         toSendFile = new File([slicedBlob], file.value.name.replace(/\.pdf$/i, '') + '.subset.pdf', { type: 'application/pdf' })
+        // Update local preview to show only the selected pages
+        try {
+          if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
+        } catch {}
+        pdfPreviewUrl.value = URL.createObjectURL(slicedBlob)
       }
 
       const fd = new FormData()
